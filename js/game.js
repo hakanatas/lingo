@@ -201,6 +201,7 @@
     state.attempt = 0;
     state.known = L.knownLetters(state.target, []);
     state.input = [];
+    state.firstTyped = false;
     state.keyStates = {};
     state.phase = 'guess';
     state.drawsLeft = 0;
@@ -274,9 +275,16 @@
     if (key === 'ENTER') { submitGuess(); return; }
     if (key === 'SİL' || key === 'BACKSPACE') {
       if (state.input.length) { state.input.pop(); renderBoard(); }
+      else if (state.firstTyped) { state.firstTyped = false; renderBoard(); }
       return;
     }
     if (ALPHABET.indexOf(key) === -1) return;
+    // Verilen ilk harf istenirse yazılabilir: satır boşken aynı harfe basmak ilk kutuyu "yazılmış" sayar.
+    if (!state.input.length && !state.firstTyped && key === state.target[0]) {
+      state.firstTyped = true;
+      renderBoard(true);
+      return;
+    }
     if (state.input.length >= state.length - 1) return;
     state.input.push(key);
     renderBoard(true);
@@ -313,6 +321,7 @@
     L.mergeKeyStates(state.keyStates, guess, evaluation);
     state.known = L.knownLetters(state.target, state.rows.filter(function (r) { return r.status === 'ok'; }).map(function (r) { return r.letters.join(''); }));
     state.input = [];
+    state.firstTyped = false;
     state.phase = 'reveal';
     renderBoard();
     renderKeyboard();
@@ -331,6 +340,7 @@
     state.rows.push({ letters: letters || null, eval: null, status: status, team: state.current });
     state.attempt += 1;
     state.input = [];
+    state.firstTyped = false;
     state.phase = 'reveal';
     renderBoard();
     setTimeout(afterFailedAttempt, 500);
@@ -643,6 +653,8 @@
           if (c === 0) {
             cell.textContent = state.target[0];
             cell.classList.add('locked');
+            if (state.firstTyped) cell.classList.add('typed');
+            if (popLast && state.firstTyped && !state.input.length) cell.classList.add('pop');
           } else {
             var typed = state.input[c - 1];
             if (typed) {
@@ -786,7 +798,7 @@
   function showHelp() {
     showModal(
       '<h2>Nasıl oynanır?</h2>' +
-      '<p>Aranan kelimenin <b>ilk harfi</b> verilir. Aynı uzunlukta, aynı harfle başlayan bir kelime yazıp ENTER\'a bas. Sözlük kontrolü yoktur; toplam <b>5 tahmin</b> hakkın var.</p>' +
+      '<p>Aranan kelimenin <b>ilk harfi</b> verilir. Aynı uzunlukta, aynı harfle başlayan bir kelime yazıp ENTER\'a bas. Sözlük kontrolü yoktur; toplam <b>5 tahmin</b> hakkın var. İlk harf hazır yazılıdır; istersen sen de yazabilirsin, oyun onu ilk kutuya sayar.</p>' +
       '<div class="legend">' +
       '<div class="legend-row"><div class="cell correct">K</div><span>Harf doğru ve <b>doğru yerde</b> (kırmızı kare). Sonraki satıra taşınır.</span></div>' +
       '<div class="legend-row"><div class="cell present">A</div><span>Harf kelimede var ama <b>yanlış yerde</b> (sarı daire).</span></div>' +

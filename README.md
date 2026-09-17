@@ -13,7 +13,7 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 
 Oyun ilk açılışta adım adım, canlı örneklerle bir tanıtım gösterir (ilk harf, renkler, taşınan harfler, süre, Lingo kartı, modlar). Tanıtımı ana menüdeki "Nasıl oynanır? Tanıtımı izle" düğmesiyle ya da Kurallar penceresinden istediğiniz zaman yeniden açabilirsiniz.
 
-1. Kelimenin **ilk harfi** verilir. Aynı uzunlukta, aynı harfle başlayan bir kelime yazıp ENTER'a bas. Sözlük kontrolü yapılmaz; her harf dizisi tahmin olarak kabul edilir.
+1. Kelimenin **ilk harfi** verilir. Aynı uzunlukta, aynı harfle başlayan bir kelime yazıp ENTER'a bas. İlk harf hazır yazılıdır; kelimeyi ilk harfiyle birlikte de yazabilirsin, oyun onu ilk kutuya sayar. Sözlük kontrolü yapılmaz; her harf dizisi tahmin olarak kabul edilir.
 2. Her tahminden sonra harfler işaretlenir:
    - 🟥 **Kırmızı kare**: harf doğru ve doğru yerde. Bir sonraki satıra ipucu olarak taşınır.
    - 🟡 **Sarı daire**: harf kelimede var ama yanlış yerde.

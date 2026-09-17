@@ -72,7 +72,7 @@
   var STEPS = [
     {
       title: 'Aranan kelimenin ilk harfi verilir',
-      text: 'Her turda 4–7 harfli gizli bir kelime vardır. Sana yalnızca ilk harfi gösterilir; gerisini sen bulacaksın. Toplam 5 tahmin hakkın var.',
+      text: 'Her turda 4–7 harfli gizli bir kelime vardır. Sana yalnızca ilk harfi gösterilir; gerisini sen bulacaksın. Kelimeyi ilk harfiyle birlikte yazabilirsin, oyun onu ilk kutuya sayar. Toplam 5 tahmin hakkın var.',
       demo: function (box) {
         var board = el('div', 'board');
         var row = makeRow(['K', '', '', '', ''], ['locked', null, null, null, null]);
