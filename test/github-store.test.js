@@ -10,11 +10,12 @@ function fakeGitHub() {
   const calls = [];
   let counter = 0;
   const sha = () => 'sha' + (++counter);
-  const res = (status, body) => Promise.resolve({ ok: status < 300, status, text: () => Promise.resolve(JSON.stringify(body)) });
+  const res = (status, body, headers) => Promise.resolve({ ok: status < 300, status, headers: { get: (k) => (headers || {})[k.toLowerCase()] || null }, text: () => Promise.resolve(JSON.stringify(body)) });
   const fetch = (url, opts) => {
     calls.push({ url, method: opts.method, auth: opts.headers.Authorization });
     const u = new URL(url);
-    if (opts.method === 'GET' && /^\/repos\/[^/]+\/[^/]+$/.test(u.pathname)) return res(200, { permissions: { push: true } });
+    if (opts.method === 'GET' && /^\/repos\/[^/]+\/[^/]+$/.test(u.pathname)) return res(200, { private: false, permissions: { push: true } }, opts.headers.Authorization === 'Bearer classic-readonly' ? { 'x-oauth-scopes': 'read:user' } : null);
+    if (opts.method === 'PUT' && opts.headers.Authorization === 'Bearer readonly') return res(403, { message: 'Resource not accessible by personal access token' });
     const m = /^\/repos\/[^/]+\/[^/]+\/contents\/(.+)$/.exec(u.pathname);
     if (!m) return res(404, { message: 'Not Found' });
     const path = decodeURIComponent(m[1]);
@@ -78,4 +79,24 @@ test('kelime deposu yardımcıları GitHub akışıyla uyumlu', () => {
   assert.equal(L.removeWordFromStore(store, 'ZÜMRÜT'), true);
   assert.equal(L.removeWordFromStore(store, 'zümrüt'), false);
   assert.deepEqual(L.sanitizeSettings({ bonusLetter: true, x: 1 }), { bonusLetter: true });
+});
+
+test('yazma izni olmayan token: anlaşılır Türkçe hata', async () => {
+  const gh = fakeGitHub();
+  const store = new GitHubStore({ owner: 'o', repo: 'r', token: 'readonly', fetch: gh.fetch });
+  await store.checkAccess();   // ince ayarlı token: bağlantı geçer, yazma sırasında anlaşılır
+  await assert.rejects(store.writeJson('kelimeler.json', { 5: ['kalem'] }, 'x'), (e) => {
+    assert.equal(e.status, 403);
+    assert.match(e.message, /Read and write/);
+    assert.match(e.raw, /not accessible/);
+    return true;
+  });
+});
+
+test('klasik token repo kapsamı yoksa bağlanırken hata', async () => {
+  const gh = fakeGitHub();
+  const store = new GitHubStore({ owner: 'o', repo: 'r', token: 'classic-readonly', fetch: gh.fetch });
+  await assert.rejects(store.checkAccess(), /repo/);
+  const ok = new GitHubStore({ owner: 'o', repo: 'r', token: 't', fetch: gh.fetch });
+  await ok.checkAccess();
 });

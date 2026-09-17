@@ -24,6 +24,24 @@
     return new TextDecoder().decode(bytes);
   }
 
+  var WRITE_HELP = 'Token bu depoya yazamıyor. GitHub\'da token ayarlarını açın: ' +
+    '"Repository access" altında "Only select repositories" seçip bu depoyu işaretleyin; ' +
+    '"Permissions → Repository permissions → Contents" için "Read and write" verin. ' +
+    'Kaydettikten sonra token\'ı buraya yeniden yapıştırın.';
+
+  /** GitHub'ın İngilizce hata metnini Türkçe ve çözüm önerili bir mesaja çevirir. */
+  function friendlyError(status, raw, method) {
+    var msg = String(raw || '');
+    if (status === 401) return 'Token geçersiz ya da süresi dolmuş (GitHub: ' + msg + ').';
+    if (status === 403 && /not accessible by (personal access|integration)/i.test(msg)) return WRITE_HELP;
+    if (status === 403 && /rate limit/i.test(msg)) return 'GitHub istek sınırı aşıldı; birkaç dakika sonra tekrar deneyin.';
+    if (status === 403) return 'GitHub izin vermedi: ' + msg + ' ' + WRITE_HELP;
+    if (status === 404 && method !== 'GET') return 'Depo ya da dal bulunamadı. Kullanıcı adı, depo adı ve dal alanlarını kontrol edin (GitHub: ' + msg + ').';
+    if (status === 404) return 'Bulunamadı: ' + msg;
+    if (status === 409 || status === 422) return 'Dosya bu arada değişmiş; tekrar deneyin (GitHub: ' + msg + ').';
+    return 'GitHub ' + status + ': ' + msg;
+  }
+
   /**
    * @param {object} opts { owner, repo, branch, token, fetch }
    */
@@ -49,9 +67,16 @@
           var json = null;
           try { json = text ? JSON.parse(text) : null; } catch (e) { json = null; }
           if (!r.ok) {
-            var err = new Error((json && json.message) || ('GitHub ' + r.status));
+            var raw = (json && json.message) || ('GitHub ' + r.status);
+            var err = new Error(friendlyError(r.status, raw, method));
             err.status = r.status;
+            err.raw = raw;
             throw err;
+          }
+          if (json && typeof json === 'object' && !Array.isArray(json)) {
+            // Klasik token'larda kapsamlar başlıkta gelir; ince ayarlı token'larda başlık yoktur.
+            var scopes = r.headers && r.headers.get ? r.headers.get('x-oauth-scopes') : null;
+            Object.defineProperty(json, '_scopes', { value: scopes, enumerable: false });
           }
           return json;
         });
@@ -66,6 +91,26 @@
   /** Depo bilgisini döndürür (bağlantı ve yetki denemesi için). */
   GitHubStore.prototype.repoInfo = function () {
     return this._request('GET', '/repos/' + encodeURIComponent(this.owner) + '/' + encodeURIComponent(this.repo));
+  };
+
+  /**
+   * Bağlantıyı ve yazma yetkisini elden geldiğince denetler.
+   * Kullanıcının depo izni yoksa ya da klasik token'da repo kapsamı eksikse hata verir.
+   * İnce ayarlı token'ların izinleri API'den okunamaz; onlarda eksik izin ilk yazmada anlaşılır.
+   */
+  GitHubStore.prototype.checkAccess = function () {
+    return this.repoInfo().then(function (info) {
+      if (!info.permissions || !info.permissions.push) {
+        throw new Error('Bu hesabın depoya yazma izni yok (' + WRITE_HELP + ')');
+      }
+      var scopes = info._scopes;
+      if (typeof scopes === 'string') {
+        var list = scopes.split(',').map(function (x) { return x.trim(); });
+        var ok = list.indexOf('repo') !== -1 || (!info.private && list.indexOf('public_repo') !== -1);
+        if (!ok) throw new Error('Klasik token\'da "repo" kapsamı yok. ' + WRITE_HELP);
+      }
+      return info;
+    });
   };
 
   /** Dosyayı okur. Yoksa { exists: false, data: null }. */

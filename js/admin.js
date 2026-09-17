@@ -107,10 +107,7 @@
     var self = this;
     this.owner = owner; this.repo = repo; this.branch = branch || 'main';
     var client = new window.GitHubStore({ owner: owner, repo: repo, branch: this.branch, token: token });
-    return client.repoInfo().then(function (info) {
-      if (!info.permissions || !info.permissions.push) {
-        throw new Error('Bu token depoya yazma yetkisi taşımıyor (Contents: Read and write gerekir).');
-      }
+    return client.checkAccess().then(function () {
       self.client = client;
       sset('lingo.githubToken', token);
       lset('lingo.github', { owner: owner, repo: repo, branch: self.branch });
@@ -178,7 +175,7 @@
     } else if (mode === 'github') {
       $('login-form-github').classList.toggle('hidden', canEdit);
       setStatus(canEdit
-        ? 'GitHub\'a bağlı: <b>' + esc(backend.owner + '/' + backend.repo) + '</b> (' + esc(backend.branch) + '). Değişiklikler commit olarak kaydedilir.'
+        ? 'GitHub\'a bağlı: <b>' + esc(backend.owner + '/' + backend.repo) + '</b> (' + esc(backend.branch) + '). Değişiklikler commit olarak kaydedilir. Token\'ın <b>Contents: Read and write</b> izni yoksa ilk kayıtta uyarı alırsınız.'
         : 'Bağlı değil; liste depodaki <code>kelimeler.json</code> dosyasından okunuyor.');
     }
   }
