@@ -3,7 +3,8 @@
   'use strict';
 
   var L = window.LingoLogic;
-  var WORDS = window.LINGO_WORDS;
+  var WORDS = window.LINGO_WORDS;   // Sunucu varsa api/words ile değiştirilir.
+  var serverAvailable = false;
   var $ = function (id) { return document.getElementById(id); };
 
   var MAX_ATTEMPTS = 5;
@@ -156,6 +157,17 @@
 
     $('screen-start').classList.add('hidden');
     $('screen-game').classList.remove('hidden');
+
+    if (mode === 'daily' && serverAvailable) {
+      // Herkes aynı kelimeyi alsın diye günün kelimesini sunucu belirler.
+      var started = state;
+      fetch('api/daily').then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+        if (state !== started) return;
+        if (d && d.word && d.date === todayKey()) state.dailyWord = d.word;
+        nextWord();
+      }).catch(function () { if (state === started) nextWord(); });
+      return;
+    }
     nextWord();
   }
 
@@ -167,6 +179,7 @@
   function chooseWord() {
     var list = WORDS[state.length];
     if (state.mode === 'daily') {
+      if (state.dailyWord) return state.dailyWord;
       var rng = L.seededRandom(L.dateSeed(todayKey()));
       return L.pickWord(list, rng);
     }
@@ -895,6 +908,25 @@
   });
 
   initStartScreen();
+  loadServerWords();
+
+  /** Sunucu (server.js) çalışıyorsa kelime havuzunu oradan alır; yoksa gömülü liste kullanılır. */
+  function loadServerWords() {
+    if (location.protocol === 'file:' || typeof fetch !== 'function') return;
+    fetch('api/words').then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
+      if (!data || !data.words) return;
+      var ok = [4, 5, 6, 7].every(function (n) { return Array.isArray(data.words[n]) && data.words[n].length > 0; });
+      if (!ok) return;
+      WORDS = data.words;
+      serverAvailable = true;
+      var link = $('admin-link');
+      if (link) {
+        var total = [4, 5, 6, 7].reduce(function (a, n) { return a + data.words[n].length; }, 0);
+        link.textContent = 'Kelime yönetimi (' + total + ' kelime)';
+        link.classList.remove('hidden');
+      }
+    }).catch(function () { /* statik barındırma: gömülü liste */ });
+  }
 
   // Otomatik testler için: yalnızca ?debug=1 ile açıldığında hedef kelimeye erişim verir.
   if (/[?&]debug=1/.test(location.search)) {

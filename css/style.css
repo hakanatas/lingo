@@ -111,6 +111,10 @@ input[type="range"] { width: 100%; accent-color: var(--correct); }
   background: rgba(0, 0, 0, 0.25); color: var(--text); font-size: 14px;
 }
 
+.start-footer { text-align: center; margin: 18px 0 0; font-size: 14px; }
+.start-footer a { color: var(--muted); }
+.start-footer a:hover { color: var(--accent); }
+
 /* ===== Oyun ekranı ===== */
 .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
 .play-column { display: flex; flex-direction: column; align-items: center; gap: 12px; }

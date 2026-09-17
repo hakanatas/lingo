@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lingo – Kelime Yönetimi</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23e0242b'/%3E%3Ctext x='32' y='44' font-size='36' font-family='Arial' font-weight='bold' text-anchor='middle' fill='white'%3EL%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; display: grid; gap: 18px; }
+    .panel { padding: 18px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); }
+    .panel h2 { margin: 0 0 10px; font-size: 18px; }
+    .panel p { color: var(--muted); margin: 0 0 10px; font-size: 14px; line-height: 1.5; }
+    textarea, input[type="password"], input[type="search"] {
+      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.25); color: var(--text); font: inherit;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .row > * { flex: 1; }
+    .row > .btn { flex: 0 0 auto; }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tabs button { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--text); font-weight: 700; }
+    .tabs button.active { background: var(--correct); border-color: var(--correct); }
+    .tabs button small { color: rgba(255, 255, 255, 0.7); font-weight: 400; margin-left: 4px; }
+    .words { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; max-height: 420px; overflow: auto; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.3); font-weight: 700; text-transform: uppercase; font-size: 13px; }
+    .chip button { border: 0; background: transparent; color: var(--muted); font-size: 16px; line-height: 1; padding: 0 4px; }
+    .chip button:hover { color: var(--danger); }
+    .report { margin-top: 10px; font-size: 14px; line-height: 1.6; }
+    .report .ok { color: var(--ok); }
+    .report .warn { color: var(--accent); }
+    .report .bad { color: var(--danger); }
+    .status { font-size: 13px; color: var(--muted); }
+    .status b { color: var(--ok); }
+    .status b.off { color: var(--danger); }
+  </style>
+</head>
+<body data-theme="tv">
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo"><span class="logo-tile correct">L</span><span class="logo-tile present">I</span><span class="logo-tile">N</span><span class="logo-tile correct">G</span><span class="logo-tile present">O</span></span>
+      <span class="tagline">Kelime yönetimi</span>
+    </div>
+    <nav class="actions"><a class="icon-btn" href="index.html" title="Oyuna dön" style="display:grid;place-items:center;text-decoration:none">⌂</a></nav>
+  </header>
+
+  <main class="admin">
+    <section class="panel" id="login-panel">
+      <h2>Giriş</h2>
+      <p>Kelime eklemek ve silmek için sunucuda tanımlı <code>ADMIN_PASSWORD</code> şifresini gir. Listeleme şifresiz de çalışır.</p>
+      <div class="row">
+        <input type="password" id="password" placeholder="Yönetim şifresi" autocomplete="current-password">
+        <button class="btn" id="btn-login">Giriş yap</button>
+        <button class="btn ghost hidden" id="btn-logout">Çıkış</button>
+      </div>
+      <p class="status" id="status" style="margin:10px 0 0"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Kelime ekle</h2>
+      <p>Kelimeleri boşluk, virgül veya satır sonuyla ayırarak yaz. 4–7 harfli, yalnızca Türk alfabesi; büyük/küçük harf fark etmez, tekrarlar atlanır.</p>
+      <textarea id="new-words" placeholder="örnek: kalem, defter&#10;pencere"></textarea>
+      <div class="row" style="margin-top:10px">
+        <span class="status" id="add-hint"></span>
+        <button class="btn" id="btn-add">Ekle</button>
+      </div>
+      <div class="report" id="add-report"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Kelime havuzu</h2>
+      <div class="row">
+        <div class="tabs" id="tabs"></div>
+        <input type="search" id="search" placeholder="Ara…" style="max-width:220px">
+        <button class="btn secondary" id="btn-export">JSON indir</button>
+      </div>
+      <div class="words" id="word-list"></div>
+    </section>
+  </main>
+
+  <script>
+  (function () {
+    'use strict';
+    var $ = function (id) { return document.getElementById(id); };
+    var KEY = 'lingo.adminKey';
+    var LENGTHS = [4, 5, 6, 7];
+    var store = {};
+    var counts = {};
+    var currentLen = 5;
+    var adminEnabled = false;
+
+    function key() { try { return sessionStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
+    function setKey(v) { try { if (v) sessionStorage.setItem(KEY, v); else sessionStorage.removeItem(KEY); } catch (e) { /* yok say */ } }
+
+    function api(method, path, body) {
+      var headers = { 'Content-Type': 'application/json' };
+      if (key()) headers['x-admin-key'] = encodeURIComponent(key());
+      return fetch(path, { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined })
+        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.statusText); return j; }); });
+    }
+
+    function setStatus() {
+      var loggedIn = !!key();
+      $('status').innerHTML = !adminEnabled
+        ? 'Sunucuda <b class="off">ADMIN_PASSWORD tanımlı değil</b>; ekleme/silme kapalı.'
+        : (loggedIn ? 'Giriş yapıldı. <b>Ekleme ve silme açık.</b>' : 'Giriş yapılmadı; yalnızca listeleme.');
+      $('btn-logout').classList.toggle('hidden', !loggedIn);
+      $('btn-login').classList.toggle('hidden', loggedIn);
+      $('password').classList.toggle('hidden', loggedIn);
+      $('btn-add').disabled = !loggedIn;
+      $('add-hint').textContent = loggedIn ? '' : 'Eklemek için giriş yap.';
+    }
+
+    function loadWords() {
+      return api('GET', 'api/words').then(function (data) {
+        store = data.words; counts = data.counts; renderTabs(); renderList();
+      });
+    }
+
+    function renderTabs() {
+      $('tabs').innerHTML = LENGTHS.map(function (n) {
+        return '<button data-len="' + n + '" class="' + (n === currentLen ? 'active' : '') + '">' + n + ' harf<small>' + (counts[n] || 0) + '</small></button>';
+      }).join('');
+      Array.prototype.forEach.call($('tabs').querySelectorAll('button'), function (b) {
+        b.addEventListener('click', function () { currentLen = Number(b.dataset.len); renderTabs(); renderList(); });
+      });
+    }
+
+    function renderList() {
+      var q = $('search').value.trim().toLocaleLowerCase('tr-TR');
+      var list = (store[currentLen] || []).filter(function (w) { return !q || w.indexOf(q) !== -1; });
+      var canDelete = !!key() && adminEnabled;
+      $('word-list').innerHTML = list.length
+        ? list.map(function (w) {
+            return '<span class="chip">' + w + (canDelete ? '<button title="Sil" data-word="' + w + '">×</button>' : '') + '</span>';
+          }).join('')
+        : '<span class="status">Kelime yok.</span>';
+      Array.prototype.forEach.call($('word-list').querySelectorAll('button[data-word]'), function (b) {
+        b.addEventListener('click', function () { removeWord(b.dataset.word); });
+      });
+    }
+
+    function removeWord(w) {
+      if (!confirm('"' + w.toLocaleUpperCase('tr-TR') + '" silinsin mi?')) return;
+      api('DELETE', 'api/words/' + encodeURIComponent(w)).then(function (r) {
+        counts = r.counts;
+        var list = store[currentLen];
+        var i = list.indexOf(w); if (i !== -1) list.splice(i, 1);
+        renderTabs(); renderList();
+      }).catch(function (e) { alert(e.message); });
+    }
+
+    $('btn-login').addEventListener('click', function () {
+      var pw = $('password').value;
+      api('POST', 'api/auth', { password: pw }).then(function () {
+        setKey(pw); $('password').value = ''; setStatus(); renderList();
+      }).catch(function (e) { $('status').innerHTML = '<b class="off">' + e.message + '</b>'; });
+    });
+    $('password').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btn-login').click(); });
+    $('btn-logout').addEventListener('click', function () { setKey(''); setStatus(); renderList(); });
+
+    $('btn-add').addEventListener('click', function () {
+      var text = $('new-words').value;
+      if (!text.trim()) return;
+      api('POST', 'api/words', { text: text }).then(function (r) {
+        counts = r.counts;
+        var html = '';
+        if (r.added.length) html += '<div class="ok">Eklendi (' + r.added.length + '): ' + r.added.join(', ') + '</div>';
+        if (r.skipped.length) html += '<div class="warn">Zaten vardı (' + r.skipped.length + '): ' + r.skipped.join(', ') + '</div>';
+        if (r.rejected.length) html += '<div class="bad">Reddedildi: ' + r.rejected.map(function (x) { return x.word + ' (' + x.reason + ')'; }).join(', ') + '</div>';
+        $('add-report').innerHTML = html || '<div class="warn">Eklenecek kelime bulunamadı.</div>';
+        $('new-words').value = '';
+        return loadWords();
+      }).catch(function (e) { $('add-report').innerHTML = '<div class="bad">' + e.message + '</div>'; });
+    });
+
+    $('search').addEventListener('input', renderList);
+    $('btn-export').addEventListener('click', function () {
+      var blob = new Blob([JSON.stringify(store, null, 1)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'lingo-words.json'; a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    api('GET', 'api/health').then(function (h) {
+      adminEnabled = !!h.adminEnabled;
+      if (key() && adminEnabled) {
+        // Oturumdaki şifre hâlâ geçerli mi?
+        return api('POST', 'api/auth', { password: key() }).catch(function () { setKey(''); });
+      }
+    }).catch(function () {
+      $('status').innerHTML = '<b class="off">Sunucuya ulaşılamadı.</b> Bu sayfa yalnızca <code>node server.js</code> ile çalışır.';
+    }).then(function () { setStatus(); return loadWords(); }).catch(function () { /* durum zaten yazıldı */ });
+  })();
+  </script>
+</body>
+</html>

@@ -41,15 +41,53 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 
 ## Çalıştırma
 
-```bash
-# Doğrudan aç
-open index.html
+İki şekilde çalışır:
 
-# veya yerel sunucu
-npm start          # http://localhost:8080
+**1. Statik (arka uçsuz).** `index.html` dosyasını açmak ya da GitHub Pages gibi bir statik sunucuya koymak yeterlidir. Kelime havuzu `js/words.js` içindeki gömülü listeden gelir.
+
+```bash
+open index.html
+# veya
+npm run static     # http://localhost:8080
 ```
 
-GitHub Pages gibi herhangi bir statik sunucuda olduğu gibi yayınlanabilir.
+**2. Arka uçla (kelime yönetimi).** Bağımlılıksız Node.js sunucusu (`server.js`) statik dosyaları sunar, kelime havuzunu `data/words.json` dosyasında tutar ve şifre korumalı bir yönetim paneli sağlar. Oyun açılışta `api/words` uç noktasını bulursa havuzu sunucudan alır; günün kelimesini de herkes için aynı olacak şekilde sunucu belirler.
+
+```bash
+ADMIN_PASSWORD='gizli-şifre' npm start     # http://localhost:8080
+# Yönetim paneli: http://localhost:8080/admin.html
+```
+
+| Ortam değişkeni | Varsayılan | Açıklama |
+|-----------------|------------|----------|
+| `PORT` | `8080` | Dinlenecek port |
+| `ADMIN_PASSWORD` | boş | Yönetim şifresi. Boşsa panel yalnızca listeler; ekleme/silme kapalıdır. |
+| `DATA_DIR` | `./data` | `words.json` ve `daily.json` klasörü. İlk çalıştırmada gömülü listeyle doldurulur. |
+
+### Yönetim paneli (`admin.html`)
+
+- Şifreyle giriş yapıp kelime ekleyebilir (tek tek ya da toplu yapıştırarak), silebilir, arayabilir ve havuzu JSON olarak indirebilirsiniz.
+- Kelimeler otomatik olarak Türkçe küçük harfe çevrilir; 4–7 harf ve Türk alfabesi dışındakiler nedeniyle birlikte reddedilir, tekrarlar atlanır.
+- Değişiklikler anında `data/words.json` dosyasına yazılır ve oyunun bir sonraki açılışında geçerli olur.
+
+### API
+
+| Yöntem | Yol | Yetki | Açıklama |
+|--------|-----|-------|----------|
+| GET | `/api/health` | – | Durum, kelime sayıları, yönetimin açık olup olmadığı |
+| GET | `/api/words` | – | Tüm havuz (`?len=5` ile tek uzunluk) |
+| GET | `/api/daily` | – | Günün 5 harfli kelimesi (gün boyunca sabit) |
+| POST | `/api/auth` | – | `{ "password": "…" }` ile şifre doğrulama |
+| POST | `/api/words` | şifre | `{ "text": "kalem, defter" }` veya `{ "words": ["kalem"] }` ile ekleme; `added / skipped / rejected` döner |
+| DELETE | `/api/words/:kelime` | şifre | Kelime silme |
+
+Yetki gerektiren isteklerde şifre `x-admin-key` başlığında (URI kodlanmış) ya da `Authorization: Bearer …` olarak gönderilir.
+
+```bash
+curl -X POST http://localhost:8080/api/words \
+  -H "x-admin-key: gizli-%C5%9Fifre" -H "Content-Type: application/json" \
+  -d '{"text":"zümrüt, denizci"}'
+```
 
 ## Test
 
@@ -57,22 +95,30 @@ GitHub Pages gibi herhangi bir statik sunucuda olduğu gibi yayınlanabilir.
 npm test
 ```
 
-`test/logic.test.js` çekirdek kuralları (harf değerlendirme, tekrar eden harfler, Türkçe büyük/küçük harf, kelime doğrulama, Lingo kartı ve top havuzu, puanlama) ve kelime havuzunun tutarlılığını sınar.
+`test/logic.test.js` çekirdek kuralları (harf değerlendirme, tekrar eden harfler, Türkçe büyük/küçük harf, kelime doğrulama, Lingo kartı ve top havuzu, puanlama) ve kelime havuzunun tutarlılığını sınar. `test/server.test.js` arka ucu geçici bir veri klasörüyle ayağa kaldırıp API'yi (yetki, ekleme, silme, kalıcılık, günün kelimesi, statik dosya güvenliği) sınar.
 
 ## Proje yapısı
 
 ```
 index.html        Sayfa iskeleti (başlangıç ekranı, oyun ekranı, modal)
+admin.html        Kelime yönetim paneli (yalnızca server.js ile çalışır)
+server.js         Bağımlılıksız Node.js arka ucu: statik dosyalar + kelime API'si
 css/style.css     Stil, TV / Wordle temaları, duyarlı düzen
-js/words.js       4–7 harfli Türkçe kelime havuzu
-js/logic.js       Saf oyun mantığı (DOM'suz; Node testlerinde de kullanılır)
+js/words.js       Gömülü 4–7 harfli Türkçe kelime havuzu (statik kullanım ve ilk tohumlama)
+js/logic.js       Saf oyun mantığı (DOM'suz; sunucu ve Node testleri de kullanır)
 js/game.js        Oyun akışı, süre, sıra geçişi, kart/top çekme, arayüz
-test/             Node yerleşik test çalıştırıcısı ile birim testleri
+data/             Sunucunun yazdığı words.json / daily.json (git dışı)
+test/             Node yerleşik test çalıştırıcısı ile birim ve API testleri
 docs/arastirma.md Lingo kuralları ve örnek uygulamalar araştırma notları
 ```
 
 ## Kelime havuzu
 
-`js/words.js` içindeki liste hem cevap kelimesi seçiminde hem de tahmin doğrulamada kullanılır. Yeni kelime eklemek için ilgili uzunluğun dizesine küçük harfle ekleyip `npm test` çalıştırmak yeterlidir (uzunluk ve alfabe denetimi testte yapılır). Tahminlerinizin reddedilmesini istemiyorsanız ⚙ Ayarlar'dan sözlük kontrolünü kapatabilirsiniz.
+Havuz hem cevap kelimesi seçiminde hem de tahmin doğrulamada kullanılır. Kelime eklemenin iki yolu vardır:
+
+- **Arka uçla:** `admin.html` panelinden ya da API ile; değişiklik `data/words.json` dosyasına yazılır.
+- **Statik kullanımda:** `js/words.js` içindeki ilgili uzunluğun dizesine küçük harfle ekleyip `npm test` çalıştırın (uzunluk ve alfabe denetimi testte yapılır).
+
+Tahminlerinizin reddedilmesini istemiyorsanız ⚙ Ayarlar'dan sözlük kontrolünü kapatabilirsiniz.
 
 Araştırma notları ve kaynaklar için: [docs/arastirma.md](docs/arastirma.md)
