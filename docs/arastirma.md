@@ -64,7 +64,7 @@ Lingo, 1987'de ABD'de başlayan, en uzun soluklu sürümü Hollanda'da (1989–2
 
 ## 4. Bu projede alınan kararlar
 
-- **Kurallar:** ilk harf verilir, 5 tahmin, tahmin başına süre, kırmızı kare / sarı daire, bulunan harfler sonraki satıra taşınır, iki takımda sıra geçişi + bonus harf, 24 toplu havuz ve 25 sayılı kart, LINGO bonusu.
+- **Kurallar:** ilk harf verilir, 5 tahmin, tahmin başına süre, kırmızı kare / sarı daire, bulunan harfler sonraki satıra taşınır, iki takımda sıra geçişi (TV'deki bonus harf kuralı istenmeyen ipucu verdiği için uygulanmadı), 24 toplu havuz ve 25 sayılı kart, LINGO bonusu.
 - **Kelime havuzu:** Dış listeler ağ kısıtı nedeniyle indirilemediği için 4–7 harfli, özel isim içermeyen, yaygın Türkçe kelimelerden oluşan bir havuz projeye gömüldü. Havuz yalnızca cevap seçiminde kullanılır; tahminlerde sözlük kontrolü yapılmaz.
 - **Teknoloji:** Bağımlılık yok; saf HTML/CSS/JS. Çekirdek mantık `js/logic.js` içinde DOM'suz tutuldu ve Node ile test edildi.
 - **Puanlama:** TV'deki para ödülü yerine basit, açıklanabilir bir puan: harf sayısı × 20 × (6 − deneme). LINGO +500.

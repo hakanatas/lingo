@@ -23,7 +23,7 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 
 **Puan:** harf sayısı × 20 × (6 − deneme sırası). 5 harfli kelimeyi ilk denemede bulmak 500, beşinci denemede bulmak 100 puan.
 
-**İki takım modunda** yanlış tahmin veya süre aşımında sıra rakibe geçer ve rakip bir **bonus harf** kazanır (TV kuralı). Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker. Takımlardan biri çift, diğeri tek sayılı kart kullanır.
+**İki takım modunda** yanlış tahmin veya süre aşımında sıra rakibe geçer. Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker. Takımlardan biri çift, diğeri tek sayılı kart kullanır.
 
 ## Ayarlar
 
@@ -32,7 +32,6 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 | Harf sayısı (4–7) | Ana menü | Yarışmadaki 4/5/6 harfli etaplar ve 7 harfli "Süper Lingo" |
 | Tahmin süresi (0–60 sn) | Ana menü | 0 = süresiz |
 | Kelime sayısı (3/5/10) | Ana menü | Bir oyundaki kelime sayısı |
-| Bonus harf | ⚙ Ayarlar | İki takım modunda sıra geçince rakibe harf açılır |
 | Renk teması | ⚙ Ayarlar | TV (kırmızı kare / sarı daire) veya Wordle (yeşil / sarı) |
 
 İstatistikler (oyun, kelime, başarı yüzdesi, deneme dağılımı, LINGO sayısı, günlük seri) tarayıcının `localStorage` alanında tutulur.

@@ -21,7 +21,6 @@
     length: 5,
     timer: 20,
     wordsPerGame: 5,
-    bonusLetter: true,
     theme: 'tv'
   };
   var DEFAULT_STATS = {
@@ -342,19 +341,7 @@
 
   function passTurn() {
     state.current = 1 - state.current;
-    var name = state.teams[state.current].name;
-    if (settings.bonusLetter) {
-      // Rakibe bonus harf: bilinmeyen bir konum açılır.
-      var unknown = [];
-      for (var i = 1; i < state.length; i++) if (!state.known[i]) unknown.push(i);
-      if (unknown.length > 1) {
-        var pos = unknown[Math.floor(Math.random() * unknown.length)];
-        state.known[pos] = state.target[pos];
-        toast('Sıra: ' + name + ' · bonus harf: ' + state.target[pos]);
-        return;
-      }
-    }
-    toast('Sıra: ' + name);
+    toast('Sıra: ' + state.teams[state.current].name);
   }
 
   /* ---------- Kelime sonucu ---------- */
@@ -798,7 +785,7 @@
       '<li><b>Yeşil top</b> ek çekiliş hakkı verir, <b>kırmızı top</b> çekilişi bitirir, <b>?</b> topu dilediğin sayıyı seçtirir.</li>' +
       '<li>Yatay, dikey veya çapraz 5 sayı tamamlanınca <b>LINGO!</b> +' + L.LINGO_BONUS + ' puan ve yeni kart.</li></ul>' +
       '<h3>İki takım</h3>' +
-      '<ul><li>Yanlış tahmin veya süre aşımında sıra rakibe geçer; rakip bir <b>bonus harf</b> kazanır.</li>' +
+      '<ul><li>Yanlış tahmin veya süre aşımında sıra rakibe geçer.</li>' +
       '<li>Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker.</li></ul>' +
       '<h3>Klavye</h3><p>Fiziksel klavye de çalışır: harfler, ENTER ve Backspace. Türkçe Q düzeni ekranda hazırdır.</p>'
     );
@@ -835,11 +822,9 @@
   function showSettings() {
     showModal(
       '<h2>Ayarlar</h2>' +
-      '<div class="setting"><label>Bonus harf<small>İki takım modunda sıra geçince rakibe bir harf açılır</small></label><input type="checkbox" class="switch" id="set-bonus"' + (settings.bonusLetter ? ' checked' : '') + '></div>' +
       '<div class="setting"><label>Renk teması<small>TV: kırmızı kare / sarı daire · Wordle: yeşil / sarı</small></label><select id="set-theme"><option value="tv"' + (settings.theme === 'tv' ? ' selected' : '') + '>TV (Lingo)</option><option value="wordle"' + (settings.theme === 'wordle' ? ' selected' : '') + '>Wordle</option></select></div>' +
       '<p style="margin-top:14px;color:var(--muted);font-size:13px">Harf sayısı, süre ve kelime sayısı ana menüden seçilir.</p>'
     );
-    $('set-bonus').addEventListener('change', function (e) { settings.bonusLetter = e.target.checked; save('lingo.settings', settings); });
     $('set-theme').addEventListener('change', function (e) {
       settings.theme = e.target.value; save('lingo.settings', settings);
       document.body.setAttribute('data-theme', settings.theme);
