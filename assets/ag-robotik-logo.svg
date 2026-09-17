@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="AG Robotik 24230 logosu">
+  <!-- Altıgen çerçeve -->
+  <polygon points="100,8 180,54 180,146 100,192 20,146 20,54" fill="#fff" stroke="#e5252c" stroke-width="12" stroke-linejoin="round"/>
+  <!-- Takım adı (kavisli) -->
+  <defs><path id="arc" d="M 36 84 A 78 78 0 0 1 164 84"/></defs>
+  <text font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="24" fill="#111" letter-spacing="1">
+    <textPath href="#arc" startOffset="50%" text-anchor="middle">AG ROBOTIK</textPath>
+  </text>
+  <!-- İngiliz anahtarı -->
+  <g fill="#f6d21c" stroke="#111" stroke-width="4" stroke-linejoin="round">
+    <path d="M 12 82 h 30 v 12 h 14 v 12 h -14 v 12 h -30 c -4 -4 -6 -10 -6 -18 s 2 -14 6 -18 z"/>
+    <rect x="52" y="88" width="120" height="24"/>
+    <rect x="160" y="74" width="34" height="52" rx="6"/>
+  </g>
+  <!-- Yumruk -->
+  <g fill="#e5252c" stroke="#111" stroke-width="4" stroke-linejoin="round">
+    <rect x="76" y="58" width="18" height="50" rx="9"/>
+    <rect x="96" y="54" width="18" height="54" rx="9"/>
+    <rect x="116" y="56" width="18" height="52" rx="9"/>
+    <rect x="136" y="62" width="16" height="46" rx="8"/>
+    <path d="M 66 96 c 0 -10 8 -16 18 -16 h 64 c 10 0 16 8 16 18 v 38 c 0 14 -10 24 -24 24 h -50 c -14 0 -24 -10 -24 -24 z"/>
+    <path d="M 78 116 c 8 -2 16 0 20 6 c 2 4 0 10 -4 12" fill="none"/>
+  </g>
+  <!-- Kol bandı ve takım numarası -->
+  <rect x="84" y="156" width="64" height="28" rx="5" fill="#e5252c" stroke="#111" stroke-width="4"/>
+  <text x="116" y="177" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="17" fill="#fff" text-anchor="middle">24230</text>
+</svg>

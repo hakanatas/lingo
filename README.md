@@ -1,5 +1,8 @@
 # Lingo – Türkçe Kelime Oyunu
 
+<p align="center"><img src="assets/ag-robotik-logo.svg" alt="AG Robotik logosu" width="140"></p>
+<p align="center"><b>Bu proje FTC #24230 AG Robotik takımı tarafından yapılmıştır.</b></p>
+
 TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalinin) kurallarıyla tarayıcıda oynanan, bağımlılıksız bir kelime oyunu. İlk harfi verilen kelimeyi 5 tahminde bul, top çek, LINGO yap.
 
 - Saf HTML / CSS / JavaScript – derleme adımı yok, `index.html` açmak yeterli.
@@ -51,9 +54,19 @@ npm run static     # http://localhost:8080
 **2. Arka uçla (kelime yönetimi).** Bağımlılıksız Node.js sunucusu (`server.js`) statik dosyaları sunar, kelime havuzunu `data/words.json` dosyasında tutar ve şifre korumalı bir yönetim paneli sağlar. Oyun açılışta `api/words` uç noktasını bulursa havuzu sunucudan alır; günün kelimesini de herkes için aynı olacak şekilde sunucu belirler.
 
 ```bash
+# macOS / Linux
 ADMIN_PASSWORD='gizli-şifre' npm start     # http://localhost:8080
+
+# Windows PowerShell
+$env:ADMIN_PASSWORD = "gizli-şifre"; npm start
+
+# Windows komut istemi (cmd)
+set ADMIN_PASSWORD=gizli-şifre && npm start
+
 # Yönetim paneli: http://localhost:8080/admin.html
 ```
+
+> **GitHub Pages'te şifre belirlenemez.** GitHub Pages yalnızca statik dosya sunar; `server.js` orada çalışmaz. Bu yüzden `admin.html` ve şifre yalnızca sunucunun çalıştığı yerde (kendi bilgisayarınız ya da Render, Railway, Fly.io gibi bir Node.js barındırma servisi) geçerlidir. Bu servislerde şifre, panelin "Environment Variables" bölümüne `ADMIN_PASSWORD` adıyla girilir; start komutu `node server.js` olmalıdır. GitHub Pages'te kelime eklemek için `js/words.js` dosyasını düzenleyip commit atmanız yeterlidir.
 
 | Ortam değişkeni | Varsayılan | Açıklama |
 |-----------------|------------|----------|

@@ -353,6 +353,15 @@ body[data-theme="wordle"] .cell.present { border-radius: 4px; }
 .winner { color: var(--accent); }
 .modal-tip { margin-top: 1rem; padding: 0.7rem 1rem; border-radius: 4px; background: var(--paper-3); border-left: 3px solid var(--accent); font-size: 1rem; color: var(--ink-soft); line-height: 1.55; }
 
+/* ===== Takım imzası ===== */
+.credit {
+  max-width: 1180px; margin: 0 auto; padding: 1rem 2.5vw 2rem;
+  display: flex; align-items: center; gap: 1rem; border-top: 1px solid var(--line);
+}
+.credit-logo { width: 64px; height: 64px; flex: 0 0 auto; filter: drop-shadow(2px 2px 0 rgba(34, 51, 79, 0.14)); }
+.credit-text { display: flex; flex-direction: column; gap: 0.15rem; font-size: 1.05rem; color: var(--ink-soft); }
+.credit-text b { color: var(--accent); }
+
 /* ===== Duyarlı düzen ===== */
 @media (max-width: 900px) {
   .game-layout { grid-template-columns: 1fr; }
