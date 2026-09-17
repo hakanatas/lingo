@@ -23,7 +23,7 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 
 **Puan:** harf sayısı × 20 × (6 − deneme sırası). 5 harfli kelimeyi ilk denemede bulmak 500, beşinci denemede bulmak 100 puan.
 
-**İki takım modunda** yanlış tahmin veya süre aşımında sıra rakibe geçer. Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker. Takımlardan biri çift, diğeri tek sayılı kart kullanır.
+**İki takım modunda** yanlış tahmin veya süre aşımında sıra rakibe geçer. Yönetim panelinden **bonus harf** açılırsa sıra geçince rakibe kelimeden rastgele bir harf gösterilir (TV kuralı; varsayılan kapalı). Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker. Takımlardan biri çift, diğeri tek sayılı kart kullanır.
 
 ## Ayarlar
 
@@ -59,10 +59,11 @@ ADMIN_PASSWORD='gizli-şifre' npm start     # http://localhost:8080
 |-----------------|------------|----------|
 | `PORT` | `8080` | Dinlenecek port |
 | `ADMIN_PASSWORD` | boş | Yönetim şifresi. Boşsa panel yalnızca listeler; ekleme/silme kapalıdır. |
-| `DATA_DIR` | `./data` | `words.json` ve `daily.json` klasörü. İlk çalıştırmada gömülü listeyle doldurulur. |
+| `DATA_DIR` | `./data` | `words.json`, `daily.json` ve `settings.json` klasörü. İlk çalıştırmada gömülü listeyle doldurulur. |
 
 ### Yönetim paneli (`admin.html`)
 
+- **Oyun ayarları:** Sunucuda saklanan ve herkes için geçerli kurallar. Şimdilik tek ayar var: *Bonus harf* (iki takım modunda sıra geçince rakibe harf açılır). Değişiklik `data/settings.json` dosyasına yazılır ve oyunun bir sonraki açılışında geçerli olur.
 - Şifreyle giriş yapıp kelime ekleyebilir (tek tek ya da toplu yapıştırarak), silebilir, arayabilir ve havuzu JSON olarak indirebilirsiniz.
 - Kelimeler otomatik olarak Türkçe küçük harfe çevrilir; 4–7 harf ve Türk alfabesi dışındakiler nedeniyle birlikte reddedilir, tekrarlar atlanır.
 - Değişiklikler anında `data/words.json` dosyasına yazılır ve oyunun bir sonraki açılışında geçerli olur.
@@ -74,6 +75,8 @@ ADMIN_PASSWORD='gizli-şifre' npm start     # http://localhost:8080
 | GET | `/api/health` | – | Durum, kelime sayıları, yönetimin açık olup olmadığı |
 | GET | `/api/words` | – | Tüm havuz (`?len=5` ile tek uzunluk) |
 | GET | `/api/daily` | – | Günün 5 harfli kelimesi (gün boyunca sabit) |
+| GET | `/api/settings` | – | Sunucuda saklanan oyun ayarları (`{ "bonusLetter": false }`) |
+| PUT | `/api/settings` | şifre | Ayar değiştirme, ör. `{ "bonusLetter": true }` |
 | POST | `/api/auth` | – | `{ "password": "…" }` ile şifre doğrulama |
 | POST | `/api/words` | şifre | `{ "text": "kalem, defter" }` veya `{ "words": ["kalem"] }` ile ekleme; `added / skipped / rejected` döner |
 | DELETE | `/api/words/:kelime` | şifre | Kelime silme |

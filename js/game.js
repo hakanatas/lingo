@@ -5,6 +5,8 @@
   var L = window.LingoLogic;
   var WORDS = window.LINGO_WORDS;   // Sunucu varsa api/words ile değiştirilir.
   var serverAvailable = false;
+  // Sunucu tarafında (admin.html) ayarlanan oyun kuralları. Sunucu yoksa varsayılanlar geçerlidir.
+  var serverConfig = { bonusLetter: false };
   var $ = function (id) { return document.getElementById(id); };
 
   var MAX_ATTEMPTS = 5;
@@ -341,7 +343,19 @@
 
   function passTurn() {
     state.current = 1 - state.current;
-    toast('Sıra: ' + state.teams[state.current].name);
+    var name = state.teams[state.current].name;
+    if (serverConfig.bonusLetter) {
+      // Bonus harf (yönetim panelinden açılır): rakibe bilinmeyen bir konum açılır.
+      var unknown = [];
+      for (var i = 1; i < state.length; i++) if (!state.known[i]) unknown.push(i);
+      if (unknown.length > 1) {
+        var pos = unknown[Math.floor(Math.random() * unknown.length)];
+        state.known[pos] = state.target[pos];
+        toast('Sıra: ' + name + ' · bonus harf: ' + state.target[pos]);
+        return;
+      }
+    }
+    toast('Sıra: ' + name);
   }
 
   /* ---------- Kelime sonucu ---------- */
@@ -785,7 +799,7 @@
       '<li><b>Yeşil top</b> ek çekiliş hakkı verir, <b>kırmızı top</b> çekilişi bitirir, <b>?</b> topu dilediğin sayıyı seçtirir.</li>' +
       '<li>Yatay, dikey veya çapraz 5 sayı tamamlanınca <b>LINGO!</b> +' + L.LINGO_BONUS + ' puan ve yeni kart.</li></ul>' +
       '<h3>İki takım</h3>' +
-      '<ul><li>Yanlış tahmin veya süre aşımında sıra rakibe geçer.</li>' +
+      '<ul><li>Yanlış tahmin veya süre aşımında sıra rakibe geçer' + (serverConfig.bonusLetter ? '; rakip bir <b>bonus harf</b> kazanır' : '') + '.</li>' +
       '<li>Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker.</li></ul>' +
       '<h3>Klavye</h3><p>Fiziksel klavye de çalışır: harfler, ENTER ve Backspace. Türkçe Q düzeni ekranda hazırdır.</p>'
     );
@@ -885,6 +899,15 @@
 
   initStartScreen();
   loadServerWords();
+  loadServerConfig();
+
+  /** Yönetim panelinden ayarlanan kuralları (ör. bonus harf) sunucudan okur. */
+  function loadServerConfig() {
+    if (location.protocol === 'file:' || typeof fetch !== 'function') return;
+    fetch('api/settings').then(function (r) { return r.ok ? r.json() : null; }).then(function (cfg) {
+      if (cfg && typeof cfg === 'object') serverConfig = Object.assign({}, serverConfig, cfg);
+    }).catch(function () { /* statik barındırma */ });
+  }
 
   /** Sunucu (server.js) çalışıyorsa kelime havuzunu oradan alır; yoksa gömülü liste kullanılır. */
   function loadServerWords() {
@@ -908,7 +931,8 @@
   if (/[?&]debug=1/.test(location.search)) {
     window.__lingoDebug = {
       getState: function () { return state; },
-      getSettings: function () { return settings; }
+      getSettings: function () { return settings; },
+      getServerConfig: function () { return serverConfig; }
     };
   }
 })();

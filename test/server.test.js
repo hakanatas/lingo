@@ -8,7 +8,7 @@ const path = require('node:path');
 // Sunucuyu geçici veri klasörü ve bilinen şifreyle yükle.
 process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'lingo-test-'));
 process.env.ADMIN_PASSWORD = 'test-şifre';
-const { createServer, validateWord, normalizeWord, addWords, emptyStore } = require('../server.js');
+const { createServer, validateWord, normalizeWord, addWords, emptyStore, sanitizeSettings } = require('../server.js');
 
 let server; let base;
 test.before(async () => {
@@ -106,4 +106,30 @@ test('statik dosyalar ve güvenlik', async () => {
   assert.equal((await fetch(base + '/api/olmayan')).status, 404);
   const bad = await fetch(base + '/api/words', { method: 'POST', headers: admin, body: '{bozuk' });
   assert.equal(bad.status, 400);
+});
+
+test('sanitizeSettings yalnızca bilinen anahtar ve tipleri alır', () => {
+  assert.deepEqual(sanitizeSettings({ bonusLetter: true, foo: 1 }), { bonusLetter: true });
+  assert.deepEqual(sanitizeSettings({ bonusLetter: 'evet' }), {});
+  assert.deepEqual(sanitizeSettings(null), {});
+});
+
+test('GET/PUT /api/settings: varsayılan kapalı, yetkiyle değişir, diske yazılır', async () => {
+  const def = await (await fetch(base + '/api/settings')).json();
+  assert.equal(def.bonusLetter, false);
+
+  const noAuth = await fetch(base + '/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bonusLetter: true }) });
+  assert.equal(noAuth.status, 401);
+
+  const bad = await fetch(base + '/api/settings', { method: 'PUT', headers: admin, body: JSON.stringify({ foo: true }) });
+  assert.equal(bad.status, 400);
+
+  const ok = await (await fetch(base + '/api/settings', { method: 'PUT', headers: admin, body: JSON.stringify({ bonusLetter: true }) })).json();
+  assert.equal(ok.bonusLetter, true);
+  const again = await (await fetch(base + '/api/settings')).json();
+  assert.equal(again.bonusLetter, true);
+  const onDisk = JSON.parse(fs.readFileSync(path.join(process.env.DATA_DIR, 'settings.json'), 'utf8'));
+  assert.equal(onDisk.bonusLetter, true);
+
+  await fetch(base + '/api/settings', { method: 'PUT', headers: admin, body: JSON.stringify({ bonusLetter: false }) });
 });

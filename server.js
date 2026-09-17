@@ -20,6 +20,7 @@ const ROOT = __dirname;
 const DATA_DIR = process.env.DATA_DIR || path.join(ROOT, 'data');
 const WORDS_FILE = path.join(DATA_DIR, 'words.json');
 const DAILY_FILE = path.join(DATA_DIR, 'daily.json');
+const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 const PORT = Number(process.env.PORT) || 8080;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const LENGTHS = [4, 5, 6, 7];
@@ -127,6 +128,37 @@ function counts(store) {
   return c;
 }
 
+/* ---------- Oyun ayarları (yönetim panelinden değiştirilir) ---------- */
+
+const DEFAULT_GAME_SETTINGS = {
+  // İki takım modunda sıra rakibe geçince kelimeden rastgele bir harf açılır (TV kuralı).
+  bonusLetter: false
+};
+
+function loadSettings() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+    return Object.assign({}, DEFAULT_GAME_SETTINGS, sanitizeSettings(raw));
+  } catch (e) {
+    return Object.assign({}, DEFAULT_GAME_SETTINGS);
+  }
+}
+
+function saveSettings(settings) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 1));
+}
+
+/** Yalnızca bilinen anahtarları ve doğru tipleri kabul eder. */
+function sanitizeSettings(input) {
+  const out = {};
+  if (!input || typeof input !== 'object') return out;
+  Object.keys(DEFAULT_GAME_SETTINGS).forEach((key) => {
+    if (typeof input[key] === typeof DEFAULT_GAME_SETTINGS[key]) out[key] = input[key];
+  });
+  return out;
+}
+
 /* ---------- Günün kelimesi ---------- */
 
 function todayKey(d) {
@@ -221,6 +253,7 @@ function serveStatic(req, res, pathname) {
 
 function createServer() {
   const store = loadWords();
+  let gameSettings = loadSettings();
 
   return http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -239,6 +272,18 @@ function createServer() {
       }
 
       if (p === '/api/daily' && req.method === 'GET') return send(res, 200, dailyWord(store));
+
+      if (p === '/api/settings' && req.method === 'GET') return send(res, 200, gameSettings);
+
+      if (p === '/api/settings' && (req.method === 'PUT' || req.method === 'POST')) {
+        if (!requireAuth(req, res)) return;
+        const body = await readBody(req);
+        const patch = sanitizeSettings(body);
+        if (!Object.keys(patch).length) return send(res, 400, { error: 'Geçerli ayar yok' });
+        gameSettings = Object.assign({}, gameSettings, patch);
+        saveSettings(gameSettings);
+        return send(res, 200, gameSettings);
+      }
 
       if (p === '/api/auth' && req.method === 'POST') {
         if (!ADMIN_PASSWORD) return send(res, 403, { error: 'Yönetim kapalı: ADMIN_PASSWORD ayarlanmamış' });
@@ -284,4 +329,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { createServer, addWords, removeWord, validateWord, normalizeWord, emptyStore };
+module.exports = { createServer, addWords, removeWord, validateWord, normalizeWord, emptyStore, sanitizeSettings, DEFAULT_GAME_SETTINGS };

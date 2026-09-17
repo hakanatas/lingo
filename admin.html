@@ -56,6 +56,16 @@
     </section>
 
     <section class="panel">
+      <h2>Oyun ayarları</h2>
+      <p>Buradaki ayarlar sunucuda saklanır ve oyunu açan herkes için geçerlidir. Değiştirmek için giriş yapmış olmalısın.</p>
+      <div class="setting">
+        <label for="cfg-bonus">Bonus harf<small>İki takım modunda sıra rakibe geçince kelimeden rastgele bir harf açılır (TV kuralı).</small></label>
+        <input type="checkbox" class="switch" id="cfg-bonus" disabled>
+      </div>
+      <p class="status" id="cfg-status" style="margin:0.5rem 0 0"></p>
+    </section>
+
+    <section class="panel">
       <h2>Kelime ekle</h2>
       <p>Kelimeleri boşluk, virgül veya satır sonuyla ayırarak yaz. 4–7 harfli, yalnızca Türk alfabesi; büyük/küçük harf fark etmez, tekrarlar atlanır.</p>
       <textarea id="new-words" placeholder="örnek: kalem, defter&#10;pencere"></textarea>
@@ -98,6 +108,23 @@
         .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.statusText); return j; }); });
     }
 
+    function loadConfig() {
+      return api('GET', 'api/settings').then(function (cfg) {
+        $('cfg-bonus').checked = !!cfg.bonusLetter;
+      }).catch(function () { /* sunucu yok */ });
+    }
+
+    $('cfg-bonus').addEventListener('change', function (e) {
+      var value = e.target.checked;
+      api('PUT', 'api/settings', { bonusLetter: value }).then(function (cfg) {
+        $('cfg-bonus').checked = !!cfg.bonusLetter;
+        $('cfg-status').innerHTML = 'Kaydedildi: bonus harf <b>' + (cfg.bonusLetter ? 'açık' : 'kapalı') + '</b>.';
+      }).catch(function (err) {
+        e.target.checked = !value;
+        $('cfg-status').innerHTML = '<b class="off">' + err.message + '</b>';
+      });
+    });
+
     function setStatus() {
       var loggedIn = !!key();
       $('status').innerHTML = !adminEnabled
@@ -107,6 +134,7 @@
       $('btn-login').classList.toggle('hidden', loggedIn);
       $('password').classList.toggle('hidden', loggedIn);
       $('btn-add').disabled = !loggedIn;
+      $('cfg-bonus').disabled = !(loggedIn && adminEnabled);
       $('add-hint').textContent = loggedIn ? '' : 'Eklemek için giriş yap.';
     }
 
@@ -189,7 +217,7 @@
       }
     }).catch(function () {
       $('status').innerHTML = '<b class="off">Sunucuya ulaşılamadı.</b> Bu sayfa yalnızca <code>node server.js</code> ile çalışır.';
-    }).then(function () { setStatus(); return loadWords(); }).catch(function () { /* durum zaten yazıldı */ });
+    }).then(function () { setStatus(); return Promise.all([loadWords(), loadConfig()]); }).catch(function () { /* durum zaten yazıldı */ });
   })();
   </script>
 </body>
