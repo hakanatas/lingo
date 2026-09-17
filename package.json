@@ -1,0 +1,11 @@
+{
+  "name": "lingo",
+  "version": "1.0.0",
+  "description": "Lingo – ilk harfi verilen Türkçe kelimeyi 5 tahminde bulma oyunu (TV yarışması kurallarıyla)",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "start": "python3 -m http.server 8080"
+  },
+  "license": "MIT"
+}
