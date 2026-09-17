@@ -8,7 +8,7 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 
 ## Nasıl oynanır?
 
-1. Kelimenin **ilk harfi** verilir. Aynı uzunlukta, aynı harfle başlayan bir Türkçe kelime yazıp ENTER'a bas.
+1. Kelimenin **ilk harfi** verilir. Aynı uzunlukta, aynı harfle başlayan bir kelime yazıp ENTER'a bas. Sözlük kontrolü yapılmaz; her harf dizisi tahmin olarak kabul edilir.
 2. Her tahminden sonra harfler işaretlenir:
    - 🟥 **Kırmızı kare**: harf doğru ve doğru yerde. Bir sonraki satıra ipucu olarak taşınır.
    - 🟡 **Sarı daire**: harf kelimede var ama yanlış yerde.
@@ -23,7 +23,7 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 
 **Puan:** harf sayısı × 20 × (6 − deneme sırası). 5 harfli kelimeyi ilk denemede bulmak 500, beşinci denemede bulmak 100 puan.
 
-**İki takım modunda** yanlış tahmin, süre aşımı veya geçersiz kelimede sıra rakibe geçer ve rakip bir **bonus harf** kazanır (TV kuralı). Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker. Takımlardan biri çift, diğeri tek sayılı kart kullanır.
+**İki takım modunda** yanlış tahmin veya süre aşımında sıra rakibe geçer ve rakip bir **bonus harf** kazanır (TV kuralı). Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker. Takımlardan biri çift, diğeri tek sayılı kart kullanır.
 
 ## Ayarlar
 
@@ -32,8 +32,6 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 | Harf sayısı (4–7) | Ana menü | Yarışmadaki 4/5/6 harfli etaplar ve 7 harfli "Süper Lingo" |
 | Tahmin süresi (0–60 sn) | Ana menü | 0 = süresiz |
 | Kelime sayısı (3/5/10) | Ana menü | Bir oyundaki kelime sayısı |
-| Sözlük kontrolü | ⚙ Ayarlar | Tahminler kelime havuzunda olmalı |
-| Geçersiz kelime hak yakar | ⚙ Ayarlar | TV kuralı: sözlükte olmayan kelime bir hak götürür |
 | Bonus harf | ⚙ Ayarlar | İki takım modunda sıra geçince rakibe harf açılır |
 | Renk teması | ⚙ Ayarlar | TV (kırmızı kare / sarı daire) veya Wordle (yeşil / sarı) |
 
@@ -114,11 +112,10 @@ docs/arastirma.md Lingo kuralları ve örnek uygulamalar araştırma notları
 
 ## Kelime havuzu
 
-Havuz hem cevap kelimesi seçiminde hem de tahmin doğrulamada kullanılır. Kelime eklemenin iki yolu vardır:
+Havuz yalnızca cevap kelimesi seçiminde kullanılır; tahminler sözlükle karşılaştırılmaz. Kelime eklemenin iki yolu vardır:
 
 - **Arka uçla:** `admin.html` panelinden ya da API ile; değişiklik `data/words.json` dosyasına yazılır.
 - **Statik kullanımda:** `js/words.js` içindeki ilgili uzunluğun dizesine küçük harfle ekleyip `npm test` çalıştırın (uzunluk ve alfabe denetimi testte yapılır).
 
-Tahminlerinizin reddedilmesini istemiyorsanız ⚙ Ayarlar'dan sözlük kontrolünü kapatabilirsiniz.
 
 Araştırma notları ve kaynaklar için: [docs/arastirma.md](docs/arastirma.md)

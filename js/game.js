@@ -21,8 +21,6 @@
     length: 5,
     timer: 20,
     wordsPerGame: 5,
-    checkDictionary: true,
-    invalidCostsGuess: false,
     bonusLetter: true,
     theme: 'tv'
   };
@@ -297,14 +295,11 @@
       return;
     }
     var guess = letters.join('');
-    var check = L.validateGuess(guess, state.target, WORDS[state.length], { checkDictionary: settings.checkDictionary });
+    // Sözlük kontrolü yapılmaz: ilk harf ve uzunluk uyan her tahmin kabul edilir.
+    var check = L.validateGuess(guess, state.target, null, { checkDictionary: false });
     if (!check.ok) {
-      var msg = check.reason === 'dictionary' ? 'Sözlükte yok: ' + guess : 'Geçersiz tahmin';
-      toast(msg);
+      toast('Geçersiz tahmin');
       shakeRow();
-      if (settings.invalidCostsGuess && check.reason === 'dictionary') {
-        consumeRow('invalid', letters);
-      }
       return;
     }
     stopTimer();
@@ -326,7 +321,7 @@
     }, delay);
   }
 
-  /** Süre dolması veya geçersiz kelime (TV kuralı) bir hakkı yakar. */
+  /** Süre dolması bir hakkı yakar. */
   function consumeRow(status, letters) {
     stopTimer();
     state.rows.push({ letters: letters || null, eval: null, status: status, team: state.current });
@@ -638,7 +633,7 @@
           } else {
             cell.textContent = rec.letters ? rec.letters[c] : (c === 0 ? state.target[0] : '·');
             cell.classList.add('timeout');
-            cell.title = rec.status === 'timeout' ? 'Süre doldu' : 'Geçersiz kelime';
+            cell.title = 'Süre doldu';
           }
         } else if (isActive) {
           if (c === 0) {
@@ -787,7 +782,7 @@
   function showHelp() {
     showModal(
       '<h2>Nasıl oynanır?</h2>' +
-      '<p>Aranan kelimenin <b>ilk harfi</b> verilir. Aynı uzunlukta, aynı harfle başlayan anlamlı bir Türkçe kelime yazıp ENTER\'a bas. Toplam <b>5 tahmin</b> hakkın var.</p>' +
+      '<p>Aranan kelimenin <b>ilk harfi</b> verilir. Aynı uzunlukta, aynı harfle başlayan bir kelime yazıp ENTER\'a bas. Sözlük kontrolü yoktur; toplam <b>5 tahmin</b> hakkın var.</p>' +
       '<div class="legend">' +
       '<div class="legend-row"><div class="cell correct">K</div><span>Harf doğru ve <b>doğru yerde</b> (kırmızı kare). Sonraki satıra taşınır.</span></div>' +
       '<div class="legend-row"><div class="cell present">A</div><span>Harf kelimede var ama <b>yanlış yerde</b> (sarı daire).</span></div>' +
@@ -803,7 +798,7 @@
       '<li><b>Yeşil top</b> ek çekiliş hakkı verir, <b>kırmızı top</b> çekilişi bitirir, <b>?</b> topu dilediğin sayıyı seçtirir.</li>' +
       '<li>Yatay, dikey veya çapraz 5 sayı tamamlanınca <b>LINGO!</b> +' + L.LINGO_BONUS + ' puan ve yeni kart.</li></ul>' +
       '<h3>İki takım</h3>' +
-      '<ul><li>Yanlış tahmin, süre aşımı veya geçersiz kelimede sıra rakibe geçer; rakip bir <b>bonus harf</b> kazanır.</li>' +
+      '<ul><li>Yanlış tahmin veya süre aşımında sıra rakibe geçer; rakip bir <b>bonus harf</b> kazanır.</li>' +
       '<li>Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker.</li></ul>' +
       '<h3>Klavye</h3><p>Fiziksel klavye de çalışır: harfler, ENTER ve Backspace. Türkçe Q düzeni ekranda hazırdır.</p>'
     );
@@ -840,14 +835,10 @@
   function showSettings() {
     showModal(
       '<h2>Ayarlar</h2>' +
-      '<div class="setting"><label>Sözlük kontrolü<small>Tahminler kelime havuzunda olmalı</small></label><input type="checkbox" class="switch" id="set-dict"' + (settings.checkDictionary ? ' checked' : '') + '></div>' +
-      '<div class="setting"><label>Geçersiz kelime hak yakar<small>TV kuralı: sözlükte olmayan kelime bir tahmin hakkı götürür</small></label><input type="checkbox" class="switch" id="set-invalid"' + (settings.invalidCostsGuess ? ' checked' : '') + '></div>' +
       '<div class="setting"><label>Bonus harf<small>İki takım modunda sıra geçince rakibe bir harf açılır</small></label><input type="checkbox" class="switch" id="set-bonus"' + (settings.bonusLetter ? ' checked' : '') + '></div>' +
       '<div class="setting"><label>Renk teması<small>TV: kırmızı kare / sarı daire · Wordle: yeşil / sarı</small></label><select id="set-theme"><option value="tv"' + (settings.theme === 'tv' ? ' selected' : '') + '>TV (Lingo)</option><option value="wordle"' + (settings.theme === 'wordle' ? ' selected' : '') + '>Wordle</option></select></div>' +
       '<p style="margin-top:14px;color:var(--muted);font-size:13px">Harf sayısı, süre ve kelime sayısı ana menüden seçilir.</p>'
     );
-    $('set-dict').addEventListener('change', function (e) { settings.checkDictionary = e.target.checked; save('lingo.settings', settings); });
-    $('set-invalid').addEventListener('change', function (e) { settings.invalidCostsGuess = e.target.checked; save('lingo.settings', settings); });
     $('set-bonus').addEventListener('change', function (e) { settings.bonusLetter = e.target.checked; save('lingo.settings', settings); });
     $('set-theme').addEventListener('change', function (e) {
       settings.theme = e.target.value; save('lingo.settings', settings);
