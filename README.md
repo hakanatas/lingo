@@ -1,6 +1,6 @@
 # Lingo – Türkçe Kelime Oyunu
 
-<p align="center"><img src="assets/ag-robotik-logo.svg" alt="AG Robotik logosu" width="140"></p>
+<p align="center"><img src="assets/logo.jpeg" alt="AG Robotik logosu" width="140"></p>
 <p align="center"><b>Bu proje FTC #24230 AG Robotik takımı tarafından yapılmıştır.</b></p>
 
 TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalinin) kurallarıyla tarayıcıda oynanan, bağımlılıksız bir kelime oyunu. İlk harfi verilen kelimeyi 5 tahminde bul, top çek, LINGO yap.
