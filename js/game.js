@@ -804,8 +804,13 @@
       '<h3>İki takım</h3>' +
       '<ul><li>Yanlış tahmin veya süre aşımında sıra rakibe geçer' + (serverConfig.bonusLetter ? '; rakip bir <b>bonus harf</b> kazanır' : '') + '.</li>' +
       '<li>Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker.</li></ul>' +
-      '<h3>Klavye</h3><p>Fiziksel klavye de çalışır: harfler, ENTER ve Backspace. Türkçe Q düzeni ekranda hazırdır.</p>'
+      '<h3>Klavye</h3><p>Fiziksel klavye de çalışır: harfler, ENTER ve Backspace. Türkçe Q düzeni ekranda hazırdır.</p>' +
+      '<div class="btn-row" style="margin-top:14px"><button class="btn" id="btn-help-intro">▶ Adım adım tanıtımı izle</button></div>'
     );
+    $('btn-help-intro').addEventListener('click', function () {
+      closeModal();
+      if (window.LingoIntro) window.LingoIntro.show(0);
+    });
   }
 
   function showStats() {
@@ -865,6 +870,7 @@
 
   /* ---------- Olaylar ---------- */
   document.addEventListener('keydown', function (e) {
+    if (window.LingoIntro && window.LingoIntro.isOpen()) return;
     if (modalOpen()) { if (e.key === 'Escape') closeModal(); return; }
     if (!state) return;
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;

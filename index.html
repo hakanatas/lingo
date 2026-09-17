@@ -27,6 +27,7 @@
     <section id="screen-start" class="screen">
       <h1 class="start-title">İlk harfi verilen kelimeyi <em>5 tahminde</em> bul.</h1>
       <p class="start-sub">Doğru yerdeki harf <span class="legend-chip correct">kırmızı kare</span>, kelimede olup yanlış yerdeki harf <span class="legend-chip present">sarı daire</span> ile gösterilir.</p>
+      <p class="start-intro"><button class="btn ghost" id="btn-intro">▶ Nasıl oynanır? Tanıtımı izle</button></p>
 
       <div class="mode-grid">
         <button class="mode-card" data-mode="solo">
@@ -117,6 +118,23 @@
     </div>
   </footer>
 
+  <div id="intro" class="intro hidden" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+    <div class="intro-box">
+      <div class="intro-kicker">Tanıtım · <span id="intro-step-label">1 / 6</span></div>
+      <h2 id="intro-title"></h2>
+      <div id="intro-demo" class="intro-demo"></div>
+      <p id="intro-text" class="intro-text"></p>
+      <div class="intro-nav">
+        <button class="btn ghost" id="intro-skip">Atla</button>
+        <div class="intro-dots" id="intro-dots"></div>
+        <div class="btn-row">
+          <button class="btn secondary" id="intro-prev">Geri</button>
+          <button class="btn" id="intro-next">İleri</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-box">
       <button class="modal-close" id="modal-close" aria-label="Kapat">×</button>
@@ -127,5 +145,6 @@
   <script src="js/words.js"></script>
   <script src="js/logic.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/intro.js"></script>
 </body>
 </html>

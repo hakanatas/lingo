@@ -11,6 +11,8 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 
 ## Nasıl oynanır?
 
+Oyun ilk açılışta adım adım, canlı örneklerle bir tanıtım gösterir (ilk harf, renkler, taşınan harfler, süre, Lingo kartı, modlar). Tanıtımı ana menüdeki "Nasıl oynanır? Tanıtımı izle" düğmesiyle ya da Kurallar penceresinden istediğiniz zaman yeniden açabilirsiniz.
+
 1. Kelimenin **ilk harfi** verilir. Aynı uzunlukta, aynı harfle başlayan bir kelime yazıp ENTER'a bas. Sözlük kontrolü yapılmaz; her harf dizisi tahmin olarak kabul edilir.
 2. Her tahminden sonra harfler işaretlenir:
    - 🟥 **Kırmızı kare**: harf doğru ve doğru yerde. Bir sonraki satıra ipucu olarak taşınır.
@@ -122,6 +124,7 @@ kelimeler.txt       Kelime havuzu: her satıra bir kelime (GitHub'da doğrudan d
 ayarlar.txt         Oyun ayarları: "bonus harf: evet/hayır"
 js/logic.js         Saf oyun mantığı + kelime deposu yardımcıları (DOM'suz; sunucu ve testler de kullanır)
 js/game.js          Oyun akışı, süre, sıra geçişi, kart/top çekme, arayüz
+js/intro.js         Adım adım giriş tanıtımı (canlı mini örnekler)
 js/admin.js         Yönetim paneli (ortamı algılar: GitHub / sunucu)
 js/github-store.js  GitHub Contents API istemcisi (dosyaları okur, commit atarak yazar; isteğe bağlı token yolu)
 js/words.js         Gömülü kelime listesi (yerel dosya kullanımı için yedek)
