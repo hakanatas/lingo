@@ -140,3 +140,5 @@ docs/arastirma.md   Lingo kuralları ve örnek uygulamalar araştırma notları
 Havuz yalnızca cevap kelimesi seçiminde kullanılır; tahminler sözlükle karşılaştırılmaz. Oyun havuzu şu sırayla arar: Node sunucusu (`api/words`) → depodaki `kelimeler.json` → gömülü `js/words.js`.
 
 Kelime eklemek için `admin.html` panelini kullanın ya da `kelimeler.json` dosyasını doğrudan düzenleyin. `npm test` dosyanın tutarlılığını (uzunluk, alfabe, tekrar) denetler.
+
+Araştırma notları ve kaynaklar için: [docs/arastirma.md](docs/arastirma.md)
