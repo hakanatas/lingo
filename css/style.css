@@ -182,12 +182,23 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius
 .turn-label { font-family: var(--serif); font-weight: 700; font-size: 1.15rem; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
 .team-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(34, 51, 79, 0.35); }
 
-.timer { width: 100%; display: flex; align-items: center; gap: 0.7rem; min-height: 1.6rem; padding: 0 0.4rem; }
-.timer-track { flex: 1; height: 8px; background: var(--paper-3); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
-.timer-bar { height: 100%; width: 100%; background: var(--green); border-radius: 999px; transition: width 0.1s linear, background 0.3s; }
-.timer-bar.warn { background: var(--gold); }
-.timer-bar.danger { background: var(--accent); }
-.timer-text { min-width: 3.2rem; text-align: right; font-family: var(--mono); font-size: 1rem; font-weight: 500; color: var(--ink); }
+/* Zaman sayacı: büyük rakam + ilerleme çubuğu; kalan süreye göre yeşil → sarı → kırmızı */
+.timer { --timer-color: var(--green); width: 100%; display: flex; align-items: center; gap: 0.9rem; min-height: 3.2rem; padding: 0 0.4rem; }
+.timer.warn { --timer-color: var(--gold); }
+.timer.danger { --timer-color: var(--accent); }
+.timer-clock {
+  display: flex; align-items: baseline; gap: 0.3rem; min-width: 5.6rem; padding: 0.15rem 0.8rem 0.25rem;
+  background: var(--paper-2); border: 2px solid var(--timer-color); border-radius: 6px;
+  box-shadow: 2px 2px 0 rgba(34, 51, 79, 0.14); transition: border-color 0.3s, background 0.3s;
+}
+.timer-text { font-family: var(--serif); font-size: 2rem; font-weight: 700; line-height: 1.1; color: var(--timer-color); font-variant-numeric: tabular-nums; min-width: 2ch; text-align: right; transition: color 0.3s; }
+.timer-unit { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.timer.danger .timer-clock { background: rgba(181, 67, 44, 0.08); animation: timerPulse 1s ease-in-out infinite; }
+.timer.danger .timer-text { animation: timerTick 1s ease-out infinite; }
+@keyframes timerPulse { 0%, 100% { box-shadow: 2px 2px 0 rgba(34, 51, 79, 0.14), 0 0 0 0 rgba(181, 67, 44, 0.45); } 50% { box-shadow: 2px 2px 0 rgba(34, 51, 79, 0.14), 0 0 0 6px rgba(181, 67, 44, 0); } }
+@keyframes timerTick { 0% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.timer-track { flex: 1; height: 14px; background: var(--paper-3); border: 1px solid var(--line-strong); border-radius: 999px; overflow: hidden; }
+.timer-bar { height: 100%; width: 100%; background: var(--timer-color); border-radius: 999px; transition: width 0.1s linear, background 0.3s; }
 
 .board { display: grid; gap: 8px; margin: 0.3rem 0; }
 .row { --size: min(var(--cell), calc((100vw - 5.5rem - (var(--cols) - 1) * 8px) / var(--cols))); display: grid; gap: 8px; grid-template-columns: repeat(var(--cols), var(--size)); }
@@ -353,6 +364,8 @@ body[data-theme="wordle"] .cell.present { border-radius: 4px; }
   .icon-btn .btn-lbl { display: none; }
   .icon-btn { min-width: 2.6rem; padding: 0 0.6rem; }
   .status-row, .timer { padding: 0 0.6rem; }
+  .timer-text { font-size: 1.7rem; }
+  .timer-clock { min-width: 5rem; padding: 0.1rem 0.6rem 0.2rem; }
   .keyboard { gap: 5px; }
   .key-row { gap: 4px; }
   .key.wide { font-size: 0.68rem; }
@@ -369,5 +382,5 @@ body[data-theme="wordle"] .cell.present { border-radius: 4px; }
   .segmented button { padding: 0.45rem 0.8rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  body, .modal, .modal-box, .cell.flip, .cell.pop, .cell.bounce, .row.shake, .card-cell.just, .card-cell.pickable, .ball { animation: none; }
+  body, .modal, .modal-box, .cell.flip, .cell.pop, .cell.bounce, .row.shake, .card-cell.just, .card-cell.pickable, .ball, .timer.danger .timer-clock, .timer.danger .timer-text { animation: none; }
 }

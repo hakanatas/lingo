@@ -251,12 +251,15 @@
   }
 
   function renderTimer() {
-    var bar = $('timer-bar');
+    var timerEl = $('timer');
     var pct = state.timerTotal ? (state.timerRemaining / state.timerTotal) * 100 : 100;
-    bar.style.width = pct + '%';
-    bar.classList.toggle('warn', pct < 50 && pct >= 25);
-    bar.classList.toggle('danger', pct < 25);
-    $('timer-text').textContent = Math.ceil(state.timerRemaining / 1000) + ' sn';
+    var seconds = Math.ceil(state.timerRemaining / 1000);
+    $('timer-bar').style.width = pct + '%';
+    // Son 5 saniye her zaman kırmızı; aksi halde kalan yüzdeye göre renk.
+    var danger = seconds <= 5 || pct < 25;
+    timerEl.classList.toggle('danger', danger);
+    timerEl.classList.toggle('warn', !danger && pct < 50);
+    $('timer-text').textContent = seconds;
   }
 
   function onTimeout() {
