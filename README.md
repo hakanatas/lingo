@@ -41,17 +41,27 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 
 ## Çalıştırma
 
-İki şekilde çalışır:
+Oyun üç şekilde çalışır. En kolayı **yalnızca GitHub** kullanmaktır.
 
-**1. Statik (arka uçsuz).** `index.html` dosyasını açmak ya da GitHub Pages gibi bir statik sunucuya koymak yeterlidir. Kelime havuzu `js/words.js` içindeki gömülü listeden gelir.
+### 1. Yalnızca GitHub (GitHub Pages) – önerilen
 
-```bash
-open index.html
-# veya
-npm run static     # http://localhost:8080
-```
+Sunucu gerekmez. Kelimeler depodaki `kelimeler.json`, ayarlar `ayarlar.json` dosyasında durur; oyun bu dosyaları doğrudan okur.
 
-**2. Arka uçla (kelime yönetimi).** Bağımlılıksız Node.js sunucusu (`server.js`) statik dosyaları sunar, kelime havuzunu `data/words.json` dosyasında tutar ve şifre korumalı bir yönetim paneli sağlar. Oyun açılışta `api/words` uç noktasını bulursa havuzu sunucudan alır; günün kelimesini de herkes için aynı olacak şekilde sunucu belirler.
+1. Depoda **Settings → Pages → Build and deployment → Source: Deploy from a branch**, dal `main`, klasör `/ (root)` seçin. Oyun `https://<kullanıcı>.github.io/lingo/` adresinde yayınlanır.
+2. Kelime eklemenin iki yolu vardır:
+   - **Yönetim paneli:** `https://<kullanıcı>.github.io/lingo/admin.html` sayfasını açın, GitHub erişim token'ı ile bağlanın; ekleme, silme ve ayar değişiklikleri depoya commit olarak yazılır. GitHub Pages 1–2 dakika içinde güncellenir.
+   - **Doğrudan düzenleme:** GitHub'da `kelimeler.json` dosyasını açıp kalem simgesiyle düzenleyin ve commit edin. Kelimeler küçük harfle, ilgili uzunluğun listesine yazılır.
+3. Bonus harf kuralı için `ayarlar.json` içindeki `bonusLetter` değerini panelden ya da elle `true` / `false` yapın.
+
+**Token nasıl alınır?** GitHub'da **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**. *Repository access* için yalnızca bu depoyu seçin; *Permissions → Repository permissions → Contents* için "Read and write" verin. Başka izin gerekmez. Token yalnızca sekme açıkken tarayıcıda tutulur; kimseyle paylaşmayın, süresi dolunca yenisini alın.
+
+### 2. Yerel dosya
+
+`index.html` dosyasını çift tıklayarak açmak yeterlidir; kelime havuzu `js/words.js` içindeki gömülü listeden gelir. Yönetim paneli bu modda çalışmaz.
+
+### 3. Node.js sunucusu (isteğe bağlı)
+
+Bağımlılıksız `server.js` statik dosyaları sunar, kelime havuzunu `data/words.json` dosyasında tutar ve şifre korumalı bir API sağlar. Oyun açılışta `api/words` uç noktasını bulursa havuzu sunucudan alır; günün kelimesini de herkes için aynı olacak şekilde sunucu belirler.
 
 ```bash
 # macOS / Linux
@@ -66,29 +76,30 @@ set ADMIN_PASSWORD=gizli-şifre && npm start
 # Yönetim paneli: http://localhost:8080/admin.html
 ```
 
-> **GitHub Pages'te şifre belirlenemez.** GitHub Pages yalnızca statik dosya sunar; `server.js` orada çalışmaz. Bu yüzden `admin.html` ve şifre yalnızca sunucunun çalıştığı yerde (kendi bilgisayarınız ya da Render, Railway, Fly.io gibi bir Node.js barındırma servisi) geçerlidir. Bu servislerde şifre, panelin "Environment Variables" bölümüne `ADMIN_PASSWORD` adıyla girilir; start komutu `node server.js` olmalıdır. GitHub Pages'te kelime eklemek için `js/words.js` dosyasını düzenleyip commit atmanız yeterlidir.
-
 | Ortam değişkeni | Varsayılan | Açıklama |
 |-----------------|------------|----------|
 | `PORT` | `8080` | Dinlenecek port |
 | `ADMIN_PASSWORD` | boş | Yönetim şifresi. Boşsa panel yalnızca listeler; ekleme/silme kapalıdır. |
-| `DATA_DIR` | `./data` | `words.json`, `daily.json` ve `settings.json` klasörü. İlk çalıştırmada gömülü listeyle doldurulur. |
+| `DATA_DIR` | `./data` | `words.json`, `daily.json` ve `settings.json` klasörü. İlk çalıştırmada `kelimeler.json` ile doldurulur. |
+
+Render, Railway veya Fly.io gibi bir serviste yayınlarken start komutu `node server.js`, şifre ise ortam değişkeni `ADMIN_PASSWORD` olarak girilir.
 
 ### Yönetim paneli (`admin.html`)
 
-- **Oyun ayarları:** Sunucuda saklanan ve herkes için geçerli kurallar. Şimdilik tek ayar var: *Bonus harf* (iki takım modunda sıra geçince rakibe harf açılır). Değişiklik `data/settings.json` dosyasına yazılır ve oyunun bir sonraki açılışında geçerli olur.
-- Şifreyle giriş yapıp kelime ekleyebilir (tek tek ya da toplu yapıştırarak), silebilir, arayabilir ve havuzu JSON olarak indirebilirsiniz.
-- Kelimeler otomatik olarak Türkçe küçük harfe çevrilir; 4–7 harf ve Türk alfabesi dışındakiler nedeniyle birlikte reddedilir, tekrarlar atlanır.
-- Değişiklikler anında `data/words.json` dosyasına yazılır ve oyunun bir sonraki açılışında geçerli olur.
+Panel hangi ortamda olduğunu kendisi anlar: Node sunucusu varsa şifreyle, yoksa GitHub token'ı ile bağlanır.
 
-### API
+- **Oyun ayarları:** Herkes için geçerli kurallar. Şimdilik tek ayar var: *Bonus harf* (iki takım modunda sıra geçince rakibe harf açılır). Varsayılan kapalı.
+- **Kelime ekle:** Tek tek ya da toplu yapıştırarak; virgül, boşluk veya satır sonuyla ayrılmış. Kelimeler Türkçe küçük harfe çevrilir; 4–7 harf ve Türk alfabesi dışındakiler nedeniyle birlikte reddedilir, tekrarlar atlanır.
+- **Kelime havuzu:** Uzunluğa göre sekmeler, arama, tek tıkla silme, JSON indirme.
+
+### API (yalnızca Node sunucusu)
 
 | Yöntem | Yol | Yetki | Açıklama |
 |--------|-----|-------|----------|
 | GET | `/api/health` | – | Durum, kelime sayıları, yönetimin açık olup olmadığı |
 | GET | `/api/words` | – | Tüm havuz (`?len=5` ile tek uzunluk) |
 | GET | `/api/daily` | – | Günün 5 harfli kelimesi (gün boyunca sabit) |
-| GET | `/api/settings` | – | Sunucuda saklanan oyun ayarları (`{ "bonusLetter": false }`) |
+| GET | `/api/settings` | – | Oyun ayarları (`{ "bonusLetter": false }`) |
 | PUT | `/api/settings` | şifre | Ayar değiştirme, ör. `{ "bonusLetter": true }` |
 | POST | `/api/auth` | – | `{ "password": "…" }` ile şifre doğrulama |
 | POST | `/api/words` | şifre | `{ "text": "kalem, defter" }` veya `{ "words": ["kalem"] }` ile ekleme; `added / skipped / rejected` döner |
@@ -96,41 +107,36 @@ set ADMIN_PASSWORD=gizli-şifre && npm start
 
 Yetki gerektiren isteklerde şifre `x-admin-key` başlığında (URI kodlanmış) ya da `Authorization: Bearer …` olarak gönderilir.
 
-```bash
-curl -X POST http://localhost:8080/api/words \
-  -H "x-admin-key: gizli-%C5%9Fifre" -H "Content-Type: application/json" \
-  -d '{"text":"zümrüt, denizci"}'
-```
-
 ## Test
 
 ```bash
 npm test
 ```
 
-`test/logic.test.js` çekirdek kuralları (harf değerlendirme, tekrar eden harfler, Türkçe büyük/küçük harf, kelime doğrulama, Lingo kartı ve top havuzu, puanlama) ve kelime havuzunun tutarlılığını sınar. `test/server.test.js` arka ucu geçici bir veri klasörüyle ayağa kaldırıp API'yi (yetki, ekleme, silme, kalıcılık, günün kelimesi, statik dosya güvenliği) sınar.
+`test/logic.test.js` çekirdek kuralları (harf değerlendirme, tekrar eden harfler, Türkçe büyük/küçük harf, kelime doğrulama, Lingo kartı ve top havuzu, puanlama) ve kelime havuzunun tutarlılığını sınar. `test/github-store.test.js` GitHub API istemcisini sahte bir API ile (okuma, yazma, çakışmada yeniden deneme, UTF-8) sınar. `test/server.test.js` Node arka ucunu geçici bir veri klasörüyle ayağa kaldırıp API'yi sınar.
 
 ## Proje yapısı
 
 ```
-index.html        Sayfa iskeleti (başlangıç ekranı, oyun ekranı, modal)
-admin.html        Kelime yönetim paneli (yalnızca server.js ile çalışır)
-server.js         Bağımlılıksız Node.js arka ucu: statik dosyalar + kelime API'si
-css/style.css     Stil, TV / Wordle temaları, duyarlı düzen
-js/words.js       Gömülü 4–7 harfli Türkçe kelime havuzu (statik kullanım ve ilk tohumlama)
-js/logic.js       Saf oyun mantığı (DOM'suz; sunucu ve Node testleri de kullanır)
-js/game.js        Oyun akışı, süre, sıra geçişi, kart/top çekme, arayüz
-data/             Sunucunun yazdığı words.json / daily.json (git dışı)
-test/             Node yerleşik test çalıştırıcısı ile birim ve API testleri
-docs/arastirma.md Lingo kuralları ve örnek uygulamalar araştırma notları
+index.html          Oyun sayfası
+admin.html          Kelime yönetim paneli (GitHub token'ı ya da Node sunucusu şifresiyle)
+kelimeler.json      Kelime havuzu (GitHub Pages modunun veri dosyası; elle de düzenlenebilir)
+ayarlar.json        Oyun ayarları (bonusLetter)
+js/logic.js         Saf oyun mantığı + kelime deposu yardımcıları (DOM'suz; sunucu ve testler de kullanır)
+js/game.js          Oyun akışı, süre, sıra geçişi, kart/top çekme, arayüz
+js/admin.js         Yönetim paneli (ortamı algılar: GitHub / sunucu)
+js/github-store.js  GitHub Contents API istemcisi (JSON dosyalarını okur, commit atarak yazar)
+js/words.js         Gömülü kelime listesi (yerel dosya kullanımı için yedek)
+css/style.css       Stil, TV / Wordle temaları, duyarlı düzen
+server.js           İsteğe bağlı Node.js arka ucu
+assets/             Takım logosu
+data/               Node sunucusunun yazdığı dosyalar (git dışı)
+test/               Node yerleşik test çalıştırıcısı ile birim ve API testleri
+docs/arastirma.md   Lingo kuralları ve örnek uygulamalar araştırma notları
 ```
 
 ## Kelime havuzu
 
-Havuz yalnızca cevap kelimesi seçiminde kullanılır; tahminler sözlükle karşılaştırılmaz. Kelime eklemenin iki yolu vardır:
+Havuz yalnızca cevap kelimesi seçiminde kullanılır; tahminler sözlükle karşılaştırılmaz. Oyun havuzu şu sırayla arar: Node sunucusu (`api/words`) → depodaki `kelimeler.json` → gömülü `js/words.js`.
 
-- **Arka uçla:** `admin.html` panelinden ya da API ile; değişiklik `data/words.json` dosyasına yazılır.
-- **Statik kullanımda:** `js/words.js` içindeki ilgili uzunluğun dizesine küçük harfle ekleyip `npm test` çalıştırın (uzunluk ve alfabe denetimi testte yapılır).
-
-
-Araştırma notları ve kaynaklar için: [docs/arastirma.md](docs/arastirma.md)
+Kelime eklemek için `admin.html` panelini kullanın ya da `kelimeler.json` dosyasını doğrudan düzenleyin. `npm test` dosyanın tutarlılığını (uzunluk, alfabe, tekrar) denetler.

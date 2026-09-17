@@ -233,6 +233,105 @@
 
   var LINGO_BONUS = 500;
 
+  /* ---------- Kelime deposu (yönetim paneli ve sunucu ortak kullanır) ---------- */
+
+  var WORD_LENGTHS = [4, 5, 6, 7];
+  var WORD_ALPHABET = 'abcçdefgğhıijklmnoöprsştuüvyz';
+
+  function emptyWordStore() {
+    var store = {};
+    WORD_LENGTHS.forEach(function (n) { store[n] = []; });
+    return store;
+  }
+
+  function collate(a, b) { return a.localeCompare(b, TR_LOCALE); }
+
+  function normalizeWord(w) { return toLowerTr(String(w == null ? '' : w).trim()); }
+
+  function validateWord(w) {
+    var c = chars(w);
+    if (!c.length) return { ok: false, reason: 'boş' };
+    if (WORD_LENGTHS.indexOf(c.length) === -1) return { ok: false, reason: 'uzunluk 4–7 olmalı' };
+    for (var i = 0; i < c.length; i++) {
+      if (WORD_ALPHABET.indexOf(c[i]) === -1) return { ok: false, reason: 'yalnızca Türk alfabesi harfleri' };
+    }
+    return { ok: true, length: c.length };
+  }
+
+  function parseWordInput(input) {
+    if (Array.isArray(input)) return input.map(String);
+    return String(input || '').split(/[\s,;]+/);
+  }
+
+  /** Depoya kelime ekler (yerinde). Sonuç: { added, skipped, rejected }. */
+  function addWordsToStore(store, input) {
+    var added = [], skipped = [], rejected = [], seen = {};
+    parseWordInput(input).forEach(function (raw) {
+      var w = normalizeWord(raw);
+      if (!w || seen[w]) return;
+      seen[w] = true;
+      var v = validateWord(w);
+      if (!v.ok) { rejected.push({ word: w, reason: v.reason }); return; }
+      if (!store[v.length]) store[v.length] = [];
+      if (store[v.length].indexOf(w) !== -1) { skipped.push(w); return; }
+      store[v.length].push(w);
+      added.push(w);
+    });
+    if (added.length) WORD_LENGTHS.forEach(function (n) { if (store[n]) store[n].sort(collate); });
+    return { added: added, skipped: skipped, rejected: rejected };
+  }
+
+  /** Depodan kelime siler (yerinde). Silindiyse true. */
+  function removeWordFromStore(store, raw) {
+    var w = normalizeWord(raw);
+    var v = validateWord(w);
+    if (!v.ok || !store[v.length]) return false;
+    var i = store[v.length].indexOf(w);
+    if (i === -1) return false;
+    store[v.length].splice(i, 1);
+    return true;
+  }
+
+  /** Bilinmeyen anahtarları ve yanlış tipleri atarak deponun kopyasını döndürür. */
+  function sanitizeWordStore(raw) {
+    var store = emptyWordStore();
+    if (!raw || typeof raw !== 'object') return store;
+    WORD_LENGTHS.forEach(function (n) {
+      if (Array.isArray(raw[n])) {
+        var seen = {};
+        raw[n].forEach(function (w) {
+          var x = normalizeWord(w);
+          if (!seen[x] && validateWord(x).ok && chars(x).length === n) { seen[x] = true; store[n].push(x); }
+        });
+        store[n].sort(collate);
+      }
+    });
+    return store;
+  }
+
+  function wordCounts(store) {
+    var c = {};
+    WORD_LENGTHS.forEach(function (n) { c[n] = (store[n] || []).length; });
+    return c;
+  }
+
+  /* ---------- Oyun ayarları (sunucu / GitHub dosyası) ---------- */
+
+  var DEFAULT_GAME_SETTINGS = {
+    // İki takım modunda sıra rakibe geçince kelimeden rastgele bir harf açılır (TV kuralı).
+    bonusLetter: false
+  };
+
+  /** Yalnızca bilinen anahtarları ve doğru tipleri kabul eder. */
+  function sanitizeSettings(input) {
+    var out = {};
+    if (!input || typeof input !== 'object') return out;
+    Object.keys(DEFAULT_GAME_SETTINGS).forEach(function (key) {
+      if (typeof input[key] === typeof DEFAULT_GAME_SETTINGS[key]) out[key] = input[key];
+    });
+    return out;
+  }
+
   var api = {
     toUpperTr: toUpperTr,
     toLowerTr: toLowerTr,
@@ -251,7 +350,19 @@
     findLingo: findLingo,
     shuffle: shuffle,
     wordScore: wordScore,
-    LINGO_BONUS: LINGO_BONUS
+    LINGO_BONUS: LINGO_BONUS,
+    WORD_LENGTHS: WORD_LENGTHS,
+    WORD_ALPHABET: WORD_ALPHABET,
+    emptyWordStore: emptyWordStore,
+    normalizeWord: normalizeWord,
+    validateWord: validateWord,
+    parseWordInput: parseWordInput,
+    addWordsToStore: addWordsToStore,
+    removeWordFromStore: removeWordFromStore,
+    sanitizeWordStore: sanitizeWordStore,
+    wordCounts: wordCounts,
+    DEFAULT_GAME_SETTINGS: DEFAULT_GAME_SETTINGS,
+    sanitizeSettings: sanitizeSettings
   };
 
   if (typeof module !== 'undefined' && module.exports) {

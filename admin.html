@@ -32,6 +32,10 @@
     .status { font-size: 0.95rem; color: var(--ink-soft); }
     .status b { color: var(--green); }
     .status b.off { color: var(--accent); }
+    .howto { margin-top: 0.7rem; font-size: 0.95rem; color: var(--ink-soft); }
+    .howto summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+    .howto ol { margin: 0.5rem 0 0; padding-left: 1.3rem; line-height: 1.55; }
+    .row > input[type="text"] { flex: 1; }
   </style>
 </head>
 <body data-theme="tv">
@@ -45,19 +49,53 @@
 
   <main class="admin">
     <section class="panel" id="login-panel">
-      <h2>Giriş</h2>
-      <p>Kelime eklemek ve silmek için sunucuda tanımlı <code>ADMIN_PASSWORD</code> şifresini gir. Listeleme şifresiz de çalışır.</p>
-      <div class="row">
-        <input type="password" id="password" placeholder="Yönetim şifresi" autocomplete="current-password">
-        <button class="btn" id="btn-login">Giriş yap</button>
-        <button class="btn ghost hidden" id="btn-logout">Çıkış</button>
+      <h2>Bağlantı</h2>
+      <p class="status" id="status" style="margin:0 0 0.8rem">Ortam algılanıyor…</p>
+
+      <!-- Node sunucusu -->
+      <div id="login-server" class="hidden">
+        <div id="login-form-server">
+          <p>Kelime eklemek ve silmek için sunucuda tanımlı <code>ADMIN_PASSWORD</code> şifresini gir.</p>
+          <div class="row">
+            <input type="password" id="password" placeholder="Yönetim şifresi" autocomplete="current-password">
+            <button class="btn" id="btn-login">Giriş yap</button>
+          </div>
+        </div>
+        <p id="server-disabled" class="status hidden"><b class="off">Sunucuda ADMIN_PASSWORD tanımlı değil;</b> ekleme, silme ve ayarlar kapalı.</p>
       </div>
-      <p class="status" id="status" style="margin:10px 0 0"></p>
+
+      <!-- Yalnızca GitHub -->
+      <div id="login-github" class="hidden">
+        <div id="login-form-github">
+          <p>Sunucu yok; kelimeler depodaki <code>kelimeler.json</code>, ayarlar <code>ayarlar.json</code> dosyasında tutulur. Değişiklik yapmak için depoya yazabilen bir GitHub erişim token'ı gir. Token yalnızca bu sekme açıkken tarayıcıda tutulur.</p>
+          <div class="row">
+            <input type="password" id="gh-token" placeholder="GitHub token (github_pat_… veya ghp_…)" autocomplete="off">
+            <button class="btn" id="btn-gh-login">GitHub ile bağlan</button>
+          </div>
+          <div class="row" style="margin-top:0.6rem">
+            <input type="text" id="gh-owner" placeholder="Kullanıcı adı" aria-label="GitHub kullanıcı adı">
+            <input type="text" id="gh-repo" placeholder="Depo adı" aria-label="Depo adı">
+            <input type="text" id="gh-branch" placeholder="Dal (main)" aria-label="Dal adı">
+          </div>
+          <details class="howto">
+            <summary>Token nasıl alınır?</summary>
+            <ol>
+              <li>GitHub'da sağ üstten <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token</b>.</li>
+              <li><b>Repository access:</b> "Only select repositories" seçip bu depoyu işaretle.</li>
+              <li><b>Permissions → Repository permissions → Contents:</b> "Read and write". Başka izin gerekmez.</li>
+              <li>Oluşan <code>github_pat_…</code> değerini yukarıya yapıştır. Token'ı kimseyle paylaşma; süresi dolunca yenisini al.</li>
+            </ol>
+          </details>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:0.6rem"><span></span><button class="btn ghost hidden" id="btn-logout">Bağlantıyı kes</button></div>
+      <p id="pages-note" class="status hidden" style="margin-top:0.6rem">Not: Her değişiklik depoya bir commit olarak yazılır; GitHub Pages'teki oyun 1–2 dakika içinde güncellenir.</p>
     </section>
 
     <section class="panel">
       <h2>Oyun ayarları</h2>
-      <p>Buradaki ayarlar sunucuda saklanır ve oyunu açan herkes için geçerlidir. Değiştirmek için giriş yapmış olmalısın.</p>
+      <p>Buradaki ayarlar herkes için geçerlidir (sunucuda ya da depodaki <code>ayarlar.json</code> dosyasında saklanır). Değiştirmek için bağlanmış olmalısın.</p>
       <div class="setting">
         <label for="cfg-bonus">Bonus harf<small>İki takım modunda sıra rakibe geçince kelimeden rastgele bir harf açılır (TV kuralı).</small></label>
         <input type="checkbox" class="switch" id="cfg-bonus" disabled>
@@ -96,138 +134,9 @@
     </div>
   </footer>
 
-  <script>
-  (function () {
-    'use strict';
-    var $ = function (id) { return document.getElementById(id); };
-    var KEY = 'lingo.adminKey';
-    var LENGTHS = [4, 5, 6, 7];
-    var store = {};
-    var counts = {};
-    var currentLen = 5;
-    var adminEnabled = false;
-
-    function key() { try { return sessionStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
-    function setKey(v) { try { if (v) sessionStorage.setItem(KEY, v); else sessionStorage.removeItem(KEY); } catch (e) { /* yok say */ } }
-
-    function api(method, path, body) {
-      var headers = { 'Content-Type': 'application/json' };
-      if (key()) headers['x-admin-key'] = encodeURIComponent(key());
-      return fetch(path, { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined })
-        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.statusText); return j; }); });
-    }
-
-    function loadConfig() {
-      return api('GET', 'api/settings').then(function (cfg) {
-        $('cfg-bonus').checked = !!cfg.bonusLetter;
-      }).catch(function () { /* sunucu yok */ });
-    }
-
-    $('cfg-bonus').addEventListener('change', function (e) {
-      var value = e.target.checked;
-      api('PUT', 'api/settings', { bonusLetter: value }).then(function (cfg) {
-        $('cfg-bonus').checked = !!cfg.bonusLetter;
-        $('cfg-status').innerHTML = 'Kaydedildi: bonus harf <b>' + (cfg.bonusLetter ? 'açık' : 'kapalı') + '</b>.';
-      }).catch(function (err) {
-        e.target.checked = !value;
-        $('cfg-status').innerHTML = '<b class="off">' + err.message + '</b>';
-      });
-    });
-
-    function setStatus() {
-      var loggedIn = !!key();
-      $('status').innerHTML = !adminEnabled
-        ? 'Sunucuda <b class="off">ADMIN_PASSWORD tanımlı değil</b>; ekleme/silme kapalı.'
-        : (loggedIn ? 'Giriş yapıldı. <b>Ekleme ve silme açık.</b>' : 'Giriş yapılmadı; yalnızca listeleme.');
-      $('btn-logout').classList.toggle('hidden', !loggedIn);
-      $('btn-login').classList.toggle('hidden', loggedIn);
-      $('password').classList.toggle('hidden', loggedIn);
-      $('btn-add').disabled = !loggedIn;
-      $('cfg-bonus').disabled = !(loggedIn && adminEnabled);
-      $('add-hint').textContent = loggedIn ? '' : 'Eklemek için giriş yap.';
-    }
-
-    function loadWords() {
-      return api('GET', 'api/words').then(function (data) {
-        store = data.words; counts = data.counts; renderTabs(); renderList();
-      });
-    }
-
-    function renderTabs() {
-      $('tabs').innerHTML = LENGTHS.map(function (n) {
-        return '<button data-len="' + n + '" class="' + (n === currentLen ? 'active' : '') + '">' + n + ' harf<small>' + (counts[n] || 0) + '</small></button>';
-      }).join('');
-      Array.prototype.forEach.call($('tabs').querySelectorAll('button'), function (b) {
-        b.addEventListener('click', function () { currentLen = Number(b.dataset.len); renderTabs(); renderList(); });
-      });
-    }
-
-    function renderList() {
-      var q = $('search').value.trim().toLocaleLowerCase('tr-TR');
-      var list = (store[currentLen] || []).filter(function (w) { return !q || w.indexOf(q) !== -1; });
-      var canDelete = !!key() && adminEnabled;
-      $('word-list').innerHTML = list.length
-        ? list.map(function (w) {
-            return '<span class="chip">' + w + (canDelete ? '<button title="Sil" data-word="' + w + '">×</button>' : '') + '</span>';
-          }).join('')
-        : '<span class="status">Kelime yok.</span>';
-      Array.prototype.forEach.call($('word-list').querySelectorAll('button[data-word]'), function (b) {
-        b.addEventListener('click', function () { removeWord(b.dataset.word); });
-      });
-    }
-
-    function removeWord(w) {
-      if (!confirm('"' + w.toLocaleUpperCase('tr-TR') + '" silinsin mi?')) return;
-      api('DELETE', 'api/words/' + encodeURIComponent(w)).then(function (r) {
-        counts = r.counts;
-        var list = store[currentLen];
-        var i = list.indexOf(w); if (i !== -1) list.splice(i, 1);
-        renderTabs(); renderList();
-      }).catch(function (e) { alert(e.message); });
-    }
-
-    $('btn-login').addEventListener('click', function () {
-      var pw = $('password').value;
-      api('POST', 'api/auth', { password: pw }).then(function () {
-        setKey(pw); $('password').value = ''; setStatus(); renderList();
-      }).catch(function (e) { $('status').innerHTML = '<b class="off">' + e.message + '</b>'; });
-    });
-    $('password').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btn-login').click(); });
-    $('btn-logout').addEventListener('click', function () { setKey(''); setStatus(); renderList(); });
-
-    $('btn-add').addEventListener('click', function () {
-      var text = $('new-words').value;
-      if (!text.trim()) return;
-      api('POST', 'api/words', { text: text }).then(function (r) {
-        counts = r.counts;
-        var html = '';
-        if (r.added.length) html += '<div class="ok">Eklendi (' + r.added.length + '): ' + r.added.join(', ') + '</div>';
-        if (r.skipped.length) html += '<div class="warn">Zaten vardı (' + r.skipped.length + '): ' + r.skipped.join(', ') + '</div>';
-        if (r.rejected.length) html += '<div class="bad">Reddedildi: ' + r.rejected.map(function (x) { return x.word + ' (' + x.reason + ')'; }).join(', ') + '</div>';
-        $('add-report').innerHTML = html || '<div class="warn">Eklenecek kelime bulunamadı.</div>';
-        $('new-words').value = '';
-        return loadWords();
-      }).catch(function (e) { $('add-report').innerHTML = '<div class="bad">' + e.message + '</div>'; });
-    });
-
-    $('search').addEventListener('input', renderList);
-    $('btn-export').addEventListener('click', function () {
-      var blob = new Blob([JSON.stringify(store, null, 1)], { type: 'application/json' });
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = 'lingo-words.json'; a.click();
-      URL.revokeObjectURL(a.href);
-    });
-
-    api('GET', 'api/health').then(function (h) {
-      adminEnabled = !!h.adminEnabled;
-      if (key() && adminEnabled) {
-        // Oturumdaki şifre hâlâ geçerli mi?
-        return api('POST', 'api/auth', { password: key() }).catch(function () { setKey(''); });
-      }
-    }).catch(function () {
-      $('status').innerHTML = '<b class="off">Sunucuya ulaşılamadı.</b> Bu sayfa yalnızca <code>node server.js</code> ile çalışır.';
-    }).then(function () { setStatus(); return Promise.all([loadWords(), loadConfig()]); }).catch(function () { /* durum zaten yazıldı */ });
-  })();
-  </script>
+  <script src="js/words.js"></script>
+  <script src="js/logic.js"></script>
+  <script src="js/github-store.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 </html>

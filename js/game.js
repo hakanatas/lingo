@@ -904,30 +904,48 @@
   loadServerWords();
   loadServerConfig();
 
-  /** Yönetim panelinden ayarlanan kuralları (ör. bonus harf) sunucudan okur. */
+  /** Kuralları önce sunucudan (api/settings), yoksa depodaki ayarlar.json dosyasından okur. */
   function loadServerConfig() {
     if (location.protocol === 'file:' || typeof fetch !== 'function') return;
-    fetch('api/settings').then(function (r) { return r.ok ? r.json() : null; }).then(function (cfg) {
-      if (cfg && typeof cfg === 'object') serverConfig = Object.assign({}, serverConfig, cfg);
-    }).catch(function () { /* statik barındırma */ });
+    fetchJsonFirst(['api/settings', 'ayarlar.json']).then(function (cfg) {
+      if (cfg && typeof cfg === 'object') serverConfig = Object.assign({}, serverConfig, L.sanitizeSettings(cfg));
+    });
   }
 
-  /** Sunucu (server.js) çalışıyorsa kelime havuzunu oradan alır; yoksa gömülü liste kullanılır. */
+  /** Verilen adreslerden ilk başarılı JSON yanıtını döndürür; hiçbiri yoksa null. */
+  function fetchJsonFirst(urls) {
+    var i = 0;
+    function next() {
+      if (i >= urls.length) return Promise.resolve(null);
+      var url = urls[i++];
+      return fetch(url, { cache: 'no-store' }).then(function (r) {
+        if (!r.ok) return next();
+        return r.json().catch(next);
+      }).catch(next);
+    }
+    return next();
+  }
+
+  /**
+   * Kelime havuzunu sırasıyla sunucudan (api/words), depodaki kelimeler.json dosyasından
+   * (GitHub Pages) alır; ikisi de yoksa gömülü js/words.js listesi kullanılır.
+   */
   function loadServerWords() {
     if (location.protocol === 'file:' || typeof fetch !== 'function') return;
-    fetch('api/words').then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
-      if (!data || !data.words) return;
-      var ok = [4, 5, 6, 7].every(function (n) { return Array.isArray(data.words[n]) && data.words[n].length > 0; });
+    fetchJsonFirst(['api/words', 'kelimeler.json']).then(function (data) {
+      if (!data) return;
+      var store = L.sanitizeWordStore(data.words || data);
+      var ok = [4, 5, 6, 7].every(function (n) { return store[n].length > 0; });
       if (!ok) return;
-      WORDS = data.words;
-      serverAvailable = true;
+      WORDS = store;
+      serverAvailable = !!data.words;   // yalnızca Node sunucusu {words, counts} biçiminde yanıt verir
       var link = $('admin-link');
       if (link) {
-        var total = [4, 5, 6, 7].reduce(function (a, n) { return a + data.words[n].length; }, 0);
+        var total = [4, 5, 6, 7].reduce(function (a, n) { return a + store[n].length; }, 0);
         link.textContent = 'Kelime yönetimi (' + total + ' kelime)';
         link.classList.remove('hidden');
       }
-    }).catch(function () { /* statik barındırma: gömülü liste */ });
+    });
   }
 
   // Otomatik testler için: yalnızca ?debug=1 ile açıldığında hedef kelimeye erişim verir.

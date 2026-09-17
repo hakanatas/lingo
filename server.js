@@ -40,23 +40,20 @@ const MIME = {
 
 /* ---------- Kelime deposu ---------- */
 
-function emptyStore() {
-  const store = {};
-  LENGTHS.forEach((n) => { store[n] = []; });
-  return store;
-}
+const STATIC_WORDS_FILE = path.join(ROOT, 'kelimeler.json');   // GitHub Pages modunun dosyası; ilk tohum
+const STATIC_SETTINGS_FILE = path.join(ROOT, 'ayarlar.json');
+
+function emptyStore() { return L.emptyWordStore(); }
 
 function loadWords() {
   if (fs.existsSync(WORDS_FILE)) {
-    const raw = JSON.parse(fs.readFileSync(WORDS_FILE, 'utf8'));
-    const store = emptyStore();
-    LENGTHS.forEach((n) => { store[n] = Array.isArray(raw[n]) ? raw[n].slice().sort(collate) : []; });
-    return store;
+    return L.sanitizeWordStore(JSON.parse(fs.readFileSync(WORDS_FILE, 'utf8')));
   }
-  // İlk çalıştırma: gömülü listeyle tohumla.
-  const seed = require('./js/words.js');
-  const store = emptyStore();
-  LENGTHS.forEach((n) => { store[n] = (seed[n] || []).slice().sort(collate); });
+  // İlk çalıştırma: kelimeler.json, yoksa gömülü liste ile tohumla.
+  let seed;
+  if (fs.existsSync(STATIC_WORDS_FILE)) seed = JSON.parse(fs.readFileSync(STATIC_WORDS_FILE, 'utf8'));
+  else seed = require('./js/words.js');
+  const store = L.sanitizeWordStore(seed);
   saveWords(store);
   return store;
 }
@@ -68,95 +65,41 @@ function saveWords(store) {
   fs.renameSync(tmp, WORDS_FILE);
 }
 
-function collate(a, b) { return a.localeCompare(b, 'tr-TR'); }
-
-function normalizeWord(w) {
-  return L.toLowerTr(String(w).trim());
-}
-
-function validateWord(w) {
-  const chars = L.chars(w);
-  if (!chars.length) return { ok: false, reason: 'boş' };
-  if (LENGTHS.indexOf(chars.length) === -1) return { ok: false, reason: 'uzunluk 4–7 olmalı' };
-  if (!chars.every((c) => ALPHA.includes(c))) return { ok: false, reason: 'yalnızca Türk alfabesi harfleri' };
-  return { ok: true, length: chars.length };
-}
-
-function parseWordInput(input) {
-  if (Array.isArray(input)) return input.map(String);
-  return String(input || '').split(/[\s,;]+/);
-}
+const normalizeWord = L.normalizeWord;
+const validateWord = L.validateWord;
 
 function addWords(store, input) {
-  const added = [];
-  const skipped = [];
-  const rejected = [];
-  const seen = new Set();
-  parseWordInput(input).forEach((raw) => {
-    const w = normalizeWord(raw);
-    if (!w) return;
-    if (seen.has(w)) return;
-    seen.add(w);
-    const v = validateWord(w);
-    if (!v.ok) { rejected.push({ word: w, reason: v.reason }); return; }
-    if (store[v.length].includes(w)) { skipped.push(w); return; }
-    store[v.length].push(w);
-    added.push(w);
-  });
-  if (added.length) {
-    LENGTHS.forEach((n) => store[n].sort(collate));
-    saveWords(store);
-  }
-  return { added, skipped, rejected };
+  const result = L.addWordsToStore(store, input);
+  if (result.added.length) saveWords(store);
+  return result;
 }
 
 function removeWord(store, raw) {
-  const w = normalizeWord(raw);
-  const v = validateWord(w);
-  if (!v.ok) return false;
-  const list = store[v.length];
-  const i = list.indexOf(w);
-  if (i === -1) return false;
-  list.splice(i, 1);
-  saveWords(store);
-  return true;
+  const removed = L.removeWordFromStore(store, raw);
+  if (removed) saveWords(store);
+  return removed;
 }
 
-function counts(store) {
-  const c = {};
-  LENGTHS.forEach((n) => { c[n] = store[n].length; });
-  return c;
-}
+function counts(store) { return L.wordCounts(store); }
 
 /* ---------- Oyun ayarları (yönetim panelinden değiştirilir) ---------- */
 
-const DEFAULT_GAME_SETTINGS = {
-  // İki takım modunda sıra rakibe geçince kelimeden rastgele bir harf açılır (TV kuralı).
-  bonusLetter: false
-};
+const DEFAULT_GAME_SETTINGS = L.DEFAULT_GAME_SETTINGS;
+const sanitizeSettings = L.sanitizeSettings;
 
 function loadSettings() {
-  try {
-    const raw = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
-    return Object.assign({}, DEFAULT_GAME_SETTINGS, sanitizeSettings(raw));
-  } catch (e) {
-    return Object.assign({}, DEFAULT_GAME_SETTINGS);
+  for (const file of [SETTINGS_FILE, STATIC_SETTINGS_FILE]) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+      return Object.assign({}, DEFAULT_GAME_SETTINGS, sanitizeSettings(raw));
+    } catch (e) { /* sıradaki dosya */ }
   }
+  return Object.assign({}, DEFAULT_GAME_SETTINGS);
 }
 
 function saveSettings(settings) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 1));
-}
-
-/** Yalnızca bilinen anahtarları ve doğru tipleri kabul eder. */
-function sanitizeSettings(input) {
-  const out = {};
-  if (!input || typeof input !== 'object') return out;
-  Object.keys(DEFAULT_GAME_SETTINGS).forEach((key) => {
-    if (typeof input[key] === typeof DEFAULT_GAME_SETTINGS[key]) out[key] = input[key];
-  });
-  return out;
 }
 
 /* ---------- Günün kelimesi ---------- */
