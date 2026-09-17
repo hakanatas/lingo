@@ -83,7 +83,8 @@
     <!-- Oyun ekranı -->
     <section id="screen-game" class="screen hidden">
       <div class="game-layout">
-        <div class="play-column">
+        <div class="play-column" id="play-column">
+          <div id="turn-banner" class="turn-banner hidden" aria-live="polite"></div>
           <div class="status-row">
             <div id="turn-label" class="turn-label"></div>
             <div id="round-label" class="round-label"></div>
@@ -106,6 +107,7 @@
         </aside>
       </div>
       <div class="plate-caption">Lingo · İlk harf verilir, 5 tahmin, kırmızı kare / sarı daire</div>
+      <div id="turn-flash" class="turn-flash hidden" aria-hidden="true"></div>
     </section>
   </main>
 

@@ -211,6 +211,7 @@
     if (state.mode === 'duo') {
       state.starter = state.wordIndex % 2;
       state.current = state.starter;
+      flashTurn(state.teams[state.current].name, TEAM_COLORS[state.current], (state.wordIndex + 1) + '. kelimeye başlıyor');
     }
 
     $('draw-panel').classList.add('hidden');
@@ -325,6 +326,7 @@
     state.phase = 'reveal';
     renderBoard();
     renderKeyboard();
+    renderStatus();
 
     var solved = evaluation.every(function (s) { return s === 'correct'; });
     var delay = state.length * 120 + 350;
@@ -354,9 +356,23 @@
     startTimer();
   }
 
+  /** Ekranın ortasında kısa süreliğine takım rengiyle "Sıra: …" duyurusu gösterir. */
+  function flashTurn(name, color, sub) {
+    var el = $('turn-flash');
+    el.innerHTML = '<span class="turn-flash-kicker">Sıra</span><span class="turn-flash-name">' + escapeHtml(name) + '</span>' + (sub ? '<span class="turn-flash-sub">' + escapeHtml(sub) + '</span>' : '');
+    el.style.setProperty('--team-color', color);
+    el.classList.remove('hidden');
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+    clearTimeout(flashTurn.timer);
+    flashTurn.timer = setTimeout(function () { el.classList.add('hidden'); }, 1500);
+  }
+
   function passTurn() {
     state.current = 1 - state.current;
     var name = state.teams[state.current].name;
+    flashTurn(name, TEAM_COLORS[state.current], 'Sıra rakibe geçti');
     if (serverConfig.bonusLetter) {
       // Bonus harf (yönetim panelinden açılır): rakibe bilinmeyen bir konum açılır.
       var unknown = [];
@@ -603,10 +619,23 @@
 
   function renderStatus() {
     var turn = $('turn-label');
+    var banner = $('turn-banner');
+    var column = $('play-column');
     if (state.mode === 'duo') {
       var t = state.teams[state.current];
-      turn.innerHTML = '<span class="team-dot" style="background:' + TEAM_COLORS[state.current] + '"></span>' + escapeHtml(t.name) + ' tahmin ediyor';
-    } else if (state.mode === 'daily') {
+      var color = TEAM_COLORS[state.current];
+      turn.innerHTML = '<span class="team-dot" style="background:' + color + '"></span>' + escapeHtml(t.name) + ' tahmin ediyor';
+      banner.innerHTML = '<span class="turn-banner-kicker">Sıra</span><span class="turn-banner-name">' + escapeHtml(t.name) + '</span><span class="turn-banner-hint">' + (state.attempt + 1) + '. tahmin · ' + (MAX_ATTEMPTS - state.attempt) + ' hak kaldı</span>';
+      banner.style.setProperty('--team-color', color);
+      banner.classList.remove('hidden');
+      column.style.setProperty('--team-color', color);
+      column.classList.add('team-turn');
+    } else {
+      banner.classList.add('hidden');
+      column.classList.remove('team-turn');
+      column.style.removeProperty('--team-color');
+    }
+    if (state.mode === 'daily') {
       turn.textContent = 'Günün kelimesi · ' + todayKey();
     } else {
       turn.textContent = state.length + ' harfli kelime';
@@ -719,8 +748,10 @@
     if (state.mode === 'daily') { sb.innerHTML = ''; return; }
     sb.innerHTML = state.teams.map(function (t, i) {
       var active = state.mode === 'duo' ? i === state.current : true;
-      return '<div class="team' + (active ? ' active' : '') + '">' +
+      var duo = state.mode === 'duo';
+      return '<div class="team' + (active ? ' active' : '') + (duo ? ' duo' : '') + '" style="--team-color:' + TEAM_COLORS[i] + '">' +
         '<span class="team-name"><span class="team-dot" style="background:' + TEAM_COLORS[i] + '"></span>' + escapeHtml(t.name) +
+        (duo && active ? '<span class="team-turn-tag">Sırada</span>' : '') +
         '<span class="team-lingos">' + t.lingos + ' LINGO</span></span>' +
         '<span class="team-score">' + t.score + '</span></div>';
     }).join('');
