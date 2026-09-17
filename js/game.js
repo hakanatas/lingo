@@ -904,41 +904,33 @@
   loadServerWords();
   loadServerConfig();
 
-  /** Kuralları önce sunucudan (api/settings), yoksa depodaki ayarlar.json dosyasından okur. */
+  /** Kuralları önce sunucudan (api/settings), yoksa depodaki ayarlar.txt dosyasından okur. */
   function loadServerConfig() {
     if (location.protocol === 'file:' || typeof fetch !== 'function') return;
-    fetchJsonFirst(['api/settings', 'ayarlar.json']).then(function (cfg) {
-      if (cfg && typeof cfg === 'object') serverConfig = Object.assign({}, serverConfig, L.sanitizeSettings(cfg));
+    fetchFirst([
+      { url: 'api/settings', parse: function (t) { return L.sanitizeSettings(JSON.parse(t)); } },
+      { url: 'ayarlar.txt', parse: L.parseSettingsText }
+    ]).then(function (cfg) {
+      if (cfg) serverConfig = Object.assign({}, serverConfig, cfg);
     });
   }
 
-  /** Verilen adreslerden ilk başarılı JSON yanıtını döndürür; hiçbiri yoksa null. */
-  function fetchJsonFirst(urls) {
-    var i = 0;
-    function next() {
-      if (i >= urls.length) return Promise.resolve(null);
-      var url = urls[i++];
-      return fetch(url, { cache: 'no-store' }).then(function (r) {
-        if (!r.ok) return next();
-        return r.json().catch(next);
-      }).catch(next);
-    }
-    return next();
-  }
-
   /**
-   * Kelime havuzunu sırasıyla sunucudan (api/words), depodaki kelimeler.json dosyasından
+   * Kelime havuzunu sırasıyla sunucudan (api/words), depodaki kelimeler.txt dosyasından
    * (GitHub Pages) alır; ikisi de yoksa gömülü js/words.js listesi kullanılır.
    */
   function loadServerWords() {
     if (location.protocol === 'file:' || typeof fetch !== 'function') return;
-    fetchJsonFirst(['api/words', 'kelimeler.json']).then(function (data) {
+    fetchFirst([
+      { url: 'api/words', parse: function (t) { var d = JSON.parse(t); return { store: L.sanitizeWordStore(d.words), server: true }; } },
+      { url: 'kelimeler.txt', parse: function (t) { return { store: L.parseWordsText(t), server: false }; } }
+    ]).then(function (data) {
       if (!data) return;
-      var store = L.sanitizeWordStore(data.words || data);
+      var store = data.store;
       var ok = [4, 5, 6, 7].every(function (n) { return store[n].length > 0; });
       if (!ok) return;
       WORDS = store;
-      serverAvailable = !!data.words;   // yalnızca Node sunucusu {words, counts} biçiminde yanıt verir
+      serverAvailable = data.server;
       var link = $('admin-link');
       if (link) {
         var total = [4, 5, 6, 7].reduce(function (a, n) { return a + store[n].length; }, 0);
@@ -946,6 +938,22 @@
         link.classList.remove('hidden');
       }
     });
+  }
+
+  /** Verilen kaynaklardan ilk başarıyla okunup ayrıştırılanı döndürür; hiçbiri yoksa null. */
+  function fetchFirst(sources) {
+    var i = 0;
+    function next() {
+      if (i >= sources.length) return Promise.resolve(null);
+      var src = sources[i++];
+      return fetch(src.url, { cache: 'no-store' }).then(function (r) {
+        if (!r.ok) return next();
+        return r.text().then(function (t) {
+          try { return src.parse(t); } catch (e) { return next(); }
+        });
+      }).catch(next);
+    }
+    return next();
   }
 
   // Otomatik testler için: yalnızca ?debug=1 ile açıldığında hedef kelimeye erişim verir.

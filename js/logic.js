@@ -315,6 +315,71 @@
     return c;
   }
 
+  /* ---------- Düz metin biçimleri (kelimeler.txt / ayarlar.txt) ---------- */
+
+  /** kelimeler.txt: her satıra bir kelime; # ile başlayan kısımlar yorumdur. Uzunluğa göre gruplar. */
+  function parseWordsText(text) {
+    var words = [];
+    String(text || '').split(/\r?\n/).forEach(function (line) {
+      var clean = line.replace(/#.*$/, '').trim();
+      if (!clean) return;
+      clean.split(/[\s,;]+/).forEach(function (w) { if (w) words.push(w); });
+    });
+    var store = emptyWordStore();
+    addWordsToStore(store, words);
+    return store;
+  }
+
+  /** Depoyu kelimeler.txt biçimine çevirir (uzunluk başlıkları ve açıklama satırlarıyla). */
+  function wordsToText(store) {
+    var out = [
+      '# Lingo kelime havuzu',
+      '# Her satıra bir kelime yazın. Büyük/küçük harf fark etmez; 4–7 harfli, Türk alfabesiyle yazılmış kelimeler alınır.',
+      '# Yeni kelimeleri istediğiniz yere ekleyebilirsiniz; # ile başlayan satırlar yok sayılır.',
+      ''
+    ];
+    WORD_LENGTHS.forEach(function (n) {
+      var list = (store[n] || []).slice().sort(collate);
+      out.push('## ' + n + ' harf (' + list.length + ' kelime)');
+      list.forEach(function (w) { out.push(w); });
+      out.push('');
+    });
+    return out.join('\n');
+  }
+
+  var TRUE_WORDS = ['evet', 'açık', 'acik', 'true', '1', 'on', 'aktif', 'var'];
+  var FALSE_WORDS = ['hayır', 'hayir', 'kapalı', 'kapali', 'false', '0', 'off', 'pasif', 'yok'];
+  var SETTING_KEYS = { bonusharf: 'bonusLetter', bonusletter: 'bonusLetter' };
+
+  /** ayarlar.txt: "bonus harf: evet" gibi satırlar. Bilinmeyen anahtarlar yok sayılır. */
+  function parseSettingsText(text) {
+    var out = {};
+    String(text || '').split(/\r?\n/).forEach(function (line) {
+      var clean = line.replace(/#.*$/, '').trim();
+      var m = /^([^:=]+)[:=](.*)$/.exec(clean);
+      if (!m) return;
+      var key = toLowerTr(m[1]).replace(/[\s_\-]+/g, '');
+      var name = SETTING_KEYS[key];
+      if (!name) return;
+      var value = toLowerTr(m[2]).trim();
+      if (TRUE_WORDS.indexOf(value) !== -1) out[name] = true;
+      else if (FALSE_WORDS.indexOf(value) !== -1) out[name] = false;
+    });
+    return out;
+  }
+
+  function settingsToText(settings) {
+    var s = Object.assign({}, DEFAULT_GAME_SETTINGS, sanitizeSettings(settings));
+    return [
+      '# Lingo oyun ayarları',
+      '# Değeri "evet" ya da "hayır" yapıp kaydedin; # ile başlayan satırlar yok sayılır.',
+      '',
+      '# İki takım modunda sıra rakibe geçince kelimeden rastgele bir harf açılsın mı? (TV kuralı)',
+      'bonus harf: ' + (s.bonusLetter ? 'evet' : 'hayır'),
+      ''
+    ].join('\n');
+  }
+
   /* ---------- Oyun ayarları (sunucu / GitHub dosyası) ---------- */
 
   var DEFAULT_GAME_SETTINGS = {
@@ -362,7 +427,11 @@
     sanitizeWordStore: sanitizeWordStore,
     wordCounts: wordCounts,
     DEFAULT_GAME_SETTINGS: DEFAULT_GAME_SETTINGS,
-    sanitizeSettings: sanitizeSettings
+    sanitizeSettings: sanitizeSettings,
+    parseWordsText: parseWordsText,
+    wordsToText: wordsToText,
+    parseSettingsText: parseSettingsText,
+    settingsToText: settingsToText
   };
 
   if (typeof module !== 'undefined' && module.exports) {

@@ -129,3 +129,20 @@ test('kelime havuzu: doğru uzunluk, benzersiz, Türk alfabesi', () => {
     assert.equal(new Set(list).size, list.length, 'tekrar yok');
   }
 });
+
+test('kelimeler.txt biçimi: ayrıştırma ve geri yazma', () => {
+  const store = L.parseWordsText('# yorum\nKalem, defter\n\n## 5 harf\nkalem\nabc  # kısa\nZümrüt\n');
+  assert.deepEqual(store[5], ['kalem']);
+  assert.deepEqual(store[6], ['defter', 'zümrüt']);
+  const text = L.wordsToText(store);
+  assert.match(text, /## 5 harf \(1 kelime\)\nkalem\n/);
+  assert.deepEqual(L.parseWordsText(text), store, 'gidiş-dönüş kayıpsız');
+});
+
+test('ayarlar.txt biçimi', () => {
+  assert.deepEqual(L.parseSettingsText('bonus harf: evet'), { bonusLetter: true });
+  assert.deepEqual(L.parseSettingsText('Bonus_Harf = Kapalı # not'), { bonusLetter: false });
+  assert.deepEqual(L.parseSettingsText('bonus harf: belki\nbaşka: evet'), {});
+  assert.deepEqual(L.parseSettingsText(L.settingsToText({ bonusLetter: true })), { bonusLetter: true });
+  assert.match(L.settingsToText({}), /bonus harf: hayır/);
+});

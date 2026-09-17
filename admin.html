@@ -36,6 +36,7 @@
     .howto summary { cursor: pointer; font-weight: 600; color: var(--ink); }
     .howto ol { margin: 0.5rem 0 0; padding-left: 1.3rem; line-height: 1.55; }
     .row > input[type="text"] { flex: 1; }
+    a.btn { text-decoration: none; display: inline-flex; align-items: center; }
   </style>
 </head>
 <body data-theme="tv">
@@ -66,36 +67,41 @@
 
       <!-- Yalnızca GitHub -->
       <div id="login-github" class="hidden">
-        <div id="login-form-github">
-          <p>Sunucu yok; kelimeler depodaki <code>kelimeler.json</code>, ayarlar <code>ayarlar.json</code> dosyasında tutulur. Değişiklik yapmak için depoya yazabilen bir GitHub erişim token'ı gir. Token yalnızca bu sekme açıkken tarayıcıda tutulur.</p>
-          <div class="row">
-            <input type="password" id="gh-token" placeholder="GitHub token (github_pat_… veya ghp_…)" autocomplete="off">
-            <button class="btn" id="btn-gh-login">GitHub ile bağlan</button>
+        <div id="easy-edit">
+          <p><b>Kolay yol (token gerekmez):</b> kelimeler depodaki <code>kelimeler.txt</code>, ayarlar <code>ayarlar.txt</code> dosyasında durur. Aşağıdaki düğme dosyayı GitHub'ın düzenleyicisinde açar; yeni kelimeleri her satıra bir tane yazıp <b>Commit changes</b> deyin. Oyun 1–2 dakika içinde güncellenir.</p>
+          <div class="row" style="margin-bottom:0.6rem">
+            <a class="btn" id="edit-words-link" href="#" target="_blank" rel="noopener">✎ kelimeler.txt dosyasını GitHub'da düzenle</a>
+            <a class="btn secondary" id="edit-settings-link" href="#" target="_blank" rel="noopener">⚙ ayarlar.txt dosyasını düzenle</a>
           </div>
-          <div class="row" style="margin-top:0.6rem">
+          <div class="row">
             <input type="text" id="gh-owner" placeholder="Kullanıcı adı" aria-label="GitHub kullanıcı adı">
             <input type="text" id="gh-repo" placeholder="Depo adı" aria-label="Depo adı">
             <input type="text" id="gh-branch" placeholder="Dal (main)" aria-label="Dal adı">
           </div>
-          <details class="howto">
-            <summary>Token nasıl alınır?</summary>
-            <ol>
-              <li>GitHub'da sağ üstten <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token</b>.</li>
-              <li><b>Repository access:</b> "Only select repositories" seçip bu depoyu işaretle.</li>
-              <li><b>Permissions → Repository permissions → Contents:</b> "Read and write". Başka izin gerekmez.</li>
-              <li>Oluşan <code>github_pat_…</code> değerini yukarıya yapıştır. Token'ı kimseyle paylaşma; süresi dolunca yenisini al.</li>
-            </ol>
-          </details>
         </div>
+        <details class="howto" id="login-form-github">
+          <summary>Gelişmiş: bu panelden doğrudan eklemek (GitHub token'ı ister)</summary>
+          <p style="margin-top:0.6rem">Depoya yazabilen bir erişim token'ı girerseniz ekleme, silme ve ayar değişiklikleri buradan commit olarak atılır. Token yalnızca bu sekme açıkken tarayıcıda tutulur.</p>
+          <div class="row">
+            <input type="password" id="gh-token" placeholder="GitHub token (github_pat_… veya ghp_…)" autocomplete="off">
+            <button class="btn" id="btn-gh-login">GitHub ile bağlan</button>
+          </div>
+          <ol style="margin-top:0.7rem">
+            <li>GitHub'da sağ üstten <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token</b>.</li>
+            <li><b>Repository access:</b> "Only select repositories" seçip bu depoyu işaretle.</li>
+            <li><b>Permissions → Repository permissions → Contents:</b> "Read and write". Başka izin gerekmez.</li>
+            <li>Oluşan <code>github_pat_…</code> değerini yukarıya yapıştır.</li>
+          </ol>
+        </details>
       </div>
 
       <div class="row" style="margin-top:0.6rem"><span></span><button class="btn ghost hidden" id="btn-logout">Bağlantıyı kes</button></div>
-      <p id="pages-note" class="status hidden" style="margin-top:0.6rem">Not: Her değişiklik depoya bir commit olarak yazılır; GitHub Pages'teki oyun 1–2 dakika içinde güncellenir.</p>
+      <p id="pages-note" class="status hidden" style="margin-top:0.6rem">Not: Her değişiklik depoya bir commit olarak yazılır; GitHub Pages'teki oyun 1–2 dakika içinde güncellenir. Tarayıcı eski sürümü gösterirse sayfayı yenileyin.</p>
     </section>
 
     <section class="panel">
       <h2>Oyun ayarları</h2>
-      <p>Buradaki ayarlar herkes için geçerlidir (sunucuda ya da depodaki <code>ayarlar.json</code> dosyasında saklanır). Değiştirmek için bağlanmış olmalısın.</p>
+      <p>Buradaki ayarlar herkes için geçerlidir (sunucuda ya da depodaki <code>ayarlar.txt</code> dosyasında saklanır). GitHub modunda kolay yol: <a id="edit-settings-link-2" href="#" target="_blank" rel="noopener">ayarlar.txt dosyasını GitHub'da düzenleyip</a> "bonus harf" satırını <b>evet</b> ya da <b>hayır</b> yapın.</p>
       <div class="setting">
         <label for="cfg-bonus">Bonus harf<small>İki takım modunda sıra rakibe geçince kelimeden rastgele bir harf açılır (TV kuralı).</small></label>
         <input type="checkbox" class="switch" id="cfg-bonus" disabled>
@@ -105,7 +111,7 @@
 
     <section class="panel">
       <h2>Kelime ekle</h2>
-      <p>Kelimeleri boşluk, virgül veya satır sonuyla ayırarak yaz. 4–7 harfli, yalnızca Türk alfabesi; büyük/küçük harf fark etmez, tekrarlar atlanır.</p>
+      <p>Kelimeleri boşluk, virgül veya satır sonuyla ayırarak yaz. 4–7 harfli, yalnızca Türk alfabesi; büyük/küçük harf fark etmez, tekrarlar atlanır. GitHub modunda kolay yol: <a id="edit-words-link-2" href="#" target="_blank" rel="noopener">kelimeler.txt dosyasını GitHub'da düzenleyin</a>.</p>
       <textarea id="new-words" placeholder="örnek: kalem, defter&#10;pencere"></textarea>
       <div class="row" style="margin-top:10px">
         <span class="status" id="add-hint"></span>

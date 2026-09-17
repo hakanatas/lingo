@@ -100,3 +100,13 @@ test('klasik token repo kapsamı yoksa bağlanırken hata', async () => {
   const ok = new GitHubStore({ owner: 'o', repo: 'r', token: 't', fetch: gh.fetch });
   await ok.checkAccess();
 });
+
+test('readText/writeText ve editUrl', async () => {
+  const gh = fakeGitHub();
+  const store = new GitHubStore({ owner: 'o', repo: 'r', token: 't', fetch: gh.fetch });
+  assert.deepEqual(await store.readText('kelimeler.txt'), { exists: false, text: null, sha: null });
+  await store.writeText('kelimeler.txt', 'kalem\nşeftali\n', 'ekle');
+  const r = await store.readText('kelimeler.txt');
+  assert.equal(r.text, 'kalem\nşeftali\n');
+  assert.equal(GitHubStore.editUrl('hakan atas', 'lingo', 'main', 'kelimeler.txt'), 'https://github.com/hakan%20atas/lingo/edit/main/kelimeler.txt');
+});

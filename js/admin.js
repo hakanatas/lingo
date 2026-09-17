@@ -1,7 +1,7 @@
 /* Lingo yönetim paneli.
  * İki çalışma biçimi vardır ve panel hangisinin geçerli olduğunu kendisi bulur:
  *   1) Node sunucusu (server.js): api/... uç noktaları ve ADMIN_PASSWORD.
- *   2) Yalnızca GitHub (GitHub Pages): kelimeler.json ve ayarlar.json depoda durur,
+ *   2) Yalnızca GitHub (GitHub Pages): kelimeler.txt ve ayarlar.txt depoda durur,
  *      değişiklikler GitHub API ile commit atılarak yapılır; yetki için erişim token'ı kullanılır.
  */
 (function () {
@@ -9,8 +9,8 @@
 
   var L = window.LingoLogic;
   var $ = function (id) { return document.getElementById(id); };
-  var WORDS_FILE = 'kelimeler.json';
-  var SETTINGS_FILE = 'ayarlar.json';
+  var WORDS_FILE = 'kelimeler.txt';
+  var SETTINGS_FILE = 'ayarlar.txt';
 
   var mode = null;          // 'server' | 'github'
   var backend = null;
@@ -84,23 +84,29 @@
     if (m) return { owner: m[1], repo: seg[0] || m[1] + '.github.io' };
     return { owner: 'hakanatas', repo: 'lingo' };
   }
+  function fetchText(url) {
+    return fetch(url, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status + ' ' + r.statusText); return r.text(); });
+  }
+  GitHubBackend.prototype.editUrl = function (file) {
+    return window.GitHubStore.editUrl(this.owner, this.repo, this.branch, file);
+  };
   GitHubBackend.prototype.load = function () {
     var self = this;
+    var words, settingsText;
     if (this.client) {
       // Bağlıyken en güncel hâli ve sha'yı doğrudan API'den al.
-      return Promise.all([self.client.readJson(WORDS_FILE), self.client.readJson(SETTINGS_FILE)]).then(function (r) {
-        return {
-          store: L.sanitizeWordStore(r[0].data || window.LINGO_WORDS),
-          settings: Object.assign({}, L.DEFAULT_GAME_SETTINGS, L.sanitizeSettings(r[1].data))
-        };
-      });
+      words = self.client.readText(WORDS_FILE).then(function (r) { return r.exists ? r.text : null; });
+      settingsText = self.client.readText(SETTINGS_FILE).then(function (r) { return r.text || ''; });
+    } else {
+      // Bağlı değilken sayfayla aynı yerden (GitHub Pages) oku; birkaç dakika eski olabilir.
+      words = fetchText(WORDS_FILE).catch(function () { return null; });
+      settingsText = fetchText(SETTINGS_FILE).catch(function () { return ''; });
     }
-    // Bağlı değilken sayfayla aynı yerden (GitHub Pages) oku; birkaç dakika eski olabilir.
-    return Promise.all([
-      fetchJson(WORDS_FILE).catch(function () { return window.LINGO_WORDS; }),
-      fetchJson(SETTINGS_FILE).catch(function () { return {}; })
-    ]).then(function (r) {
-      return { store: L.sanitizeWordStore(r[0]), settings: Object.assign({}, L.DEFAULT_GAME_SETTINGS, L.sanitizeSettings(r[1])) };
+    return Promise.all([words, settingsText]).then(function (r) {
+      return {
+        store: r[0] === null ? L.sanitizeWordStore(window.LINGO_WORDS) : L.parseWordsText(r[0]),
+        settings: Object.assign({}, L.DEFAULT_GAME_SETTINGS, L.parseSettingsText(r[1]))
+      };
     });
   };
   GitHubBackend.prototype.login = function (token, owner, repo, branch) {
@@ -122,11 +128,11 @@
   GitHubBackend.prototype.isLoggedIn = function () { return !!this.client; };
   GitHubBackend.prototype._commitWords = function (mutate, messageFor) {
     var self = this;
-    return this.client.readJson(WORDS_FILE).then(function (r) {
-      var fresh = L.sanitizeWordStore(r.data || window.LINGO_WORDS);
+    return this.client.readText(WORDS_FILE).then(function (r) {
+      var fresh = r.exists ? L.parseWordsText(r.text) : L.sanitizeWordStore(window.LINGO_WORDS);
       var result = mutate(fresh);
       if (!result.changed) return Object.assign(result, { counts: L.wordCounts(fresh) });
-      return self.client.writeJson(WORDS_FILE, fresh, messageFor(result)).then(function () {
+      return self.client.writeText(WORDS_FILE, L.wordsToText(fresh), messageFor(result)).then(function () {
         return Object.assign(result, { counts: L.wordCounts(fresh) });
       });
     });
@@ -150,9 +156,9 @@
   };
   GitHubBackend.prototype.saveSettings = function (patch) {
     var self = this;
-    return this.client.readJson(SETTINGS_FILE).then(function (r) {
-      var next = Object.assign({}, L.DEFAULT_GAME_SETTINGS, L.sanitizeSettings(r.data), L.sanitizeSettings(patch));
-      return self.client.writeJson(SETTINGS_FILE, next, 'Lingo: oyun ayarları güncellendi').then(function () { return next; });
+    return this.client.readText(SETTINGS_FILE).then(function (r) {
+      var next = Object.assign({}, L.DEFAULT_GAME_SETTINGS, L.parseSettingsText(r.text || ''), L.sanitizeSettings(patch));
+      return self.client.writeText(SETTINGS_FILE, L.settingsToText(next), 'Lingo: oyun ayarları güncellendi').then(function () { return next; });
     });
   };
 
@@ -166,7 +172,8 @@
     $('btn-logout').classList.toggle('hidden', !canEdit);
     $('btn-add').disabled = !canEdit;
     $('cfg-bonus').disabled = !canEdit;
-    $('add-hint').textContent = canEdit ? '' : (mode === 'github' ? 'Eklemek için GitHub ile bağlan.' : 'Eklemek için giriş yap.');
+    $('add-hint').textContent = canEdit ? '' : (mode === 'github' ? 'Buradan eklemek için token ile bağlanmak gerekir; kolay yol: dosyayı GitHub\'da düzenleyin.' : 'Eklemek için giriş yap.');
+    $('easy-edit').classList.toggle('hidden', mode !== 'github');
     $('pages-note').classList.toggle('hidden', mode !== 'github');
 
     if (mode === 'server') {
@@ -174,9 +181,13 @@
       setStatus(canEdit ? 'Giriş yapıldı. <b>Ekleme, silme ve ayarlar açık.</b>' : 'Giriş yapılmadı; yalnızca listeleme.');
     } else if (mode === 'github') {
       $('login-form-github').classList.toggle('hidden', canEdit);
+      $('edit-words-link').href = backend.editUrl(WORDS_FILE);
+      $('edit-settings-link').href = backend.editUrl(SETTINGS_FILE);
+      $('edit-words-link-2').href = backend.editUrl(WORDS_FILE);
+      $('edit-settings-link-2').href = backend.editUrl(SETTINGS_FILE);
       setStatus(canEdit
         ? 'GitHub\'a bağlı: <b>' + esc(backend.owner + '/' + backend.repo) + '</b> (' + esc(backend.branch) + '). Değişiklikler commit olarak kaydedilir. Token\'ın <b>Contents: Read and write</b> izni yoksa ilk kayıtta uyarı alırsınız.'
-        : 'Bağlı değil; liste depodaki <code>kelimeler.json</code> dosyasından okunuyor.');
+        : 'Liste depodaki <code>kelimeler.txt</code> dosyasından okunuyor. Kelime eklemek için dosyayı GitHub\'da düzenlemeniz yeterli.');
     }
   }
 
@@ -249,6 +260,16 @@
     }).catch(function (e) { setStatus('<b class="off">Bağlanamadı: ' + esc(e.message) + '</b>'); }).then(function () { busy(false); });
   });
   $('gh-token').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btn-gh-login').click(); });
+  ['gh-owner', 'gh-repo', 'gh-branch'].forEach(function (id) {
+    $(id).addEventListener('input', function () {
+      if (mode !== 'github' || backend.client) return;
+      backend.owner = $('gh-owner').value.trim() || backend.owner;
+      backend.repo = $('gh-repo').value.trim() || backend.repo;
+      backend.branch = $('gh-branch').value.trim() || 'main';
+      lset('lingo.github', { owner: backend.owner, repo: backend.repo, branch: backend.branch });
+      renderMode();
+    });
+  });
 
   $('btn-logout').addEventListener('click', function () { backend.logout(); renderMode(); renderList(); });
 
@@ -286,7 +307,7 @@
   $('btn-export').addEventListener('click', function () {
     var blob = new Blob([JSON.stringify(store, null, 1)], { type: 'application/json' });
     var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = WORDS_FILE; a.click();
+    a.href = URL.createObjectURL(blob); a.download = 'kelimeler.json'; a.click();
     URL.revokeObjectURL(a.href);
   });
 

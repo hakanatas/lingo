@@ -113,26 +113,32 @@
     });
   };
 
-  /** Dosyayı okur. Yoksa { exists: false, data: null }. */
-  GitHubStore.prototype.readJson = function (file) {
+  /** Dosyayı metin olarak okur. Yoksa { exists: false, text: null }. */
+  GitHubStore.prototype.readText = function (file) {
     var self = this;
     return this._request('GET', this._contentsPath(file) + '?ref=' + encodeURIComponent(this.branch))
       .then(function (res) {
         self.shas[file] = res.sha;
-        var text = base64ToUtf8(res.content || '');
-        return { exists: true, data: text ? JSON.parse(text) : null, sha: res.sha };
+        return { exists: true, text: base64ToUtf8(res.content || ''), sha: res.sha };
       }, function (err) {
-        if (err.status === 404) { delete self.shas[file]; return { exists: false, data: null, sha: null }; }
+        if (err.status === 404) { delete self.shas[file]; return { exists: false, text: null, sha: null }; }
         throw err;
       });
   };
 
+  /** Dosyayı JSON olarak okur. Yoksa { exists: false, data: null }. */
+  GitHubStore.prototype.readJson = function (file) {
+    return this.readText(file).then(function (r) {
+      return { exists: r.exists, data: r.exists && r.text ? JSON.parse(r.text) : null, sha: r.sha };
+    });
+  };
+
   /**
-   * Dosyayı commit atarak yazar. Sha eski kalmışsa (409/422) bir kez yeniden okuyup dener.
+   * Metni commit atarak yazar. Sha eski kalmışsa (409/422) bir kez yeniden okuyup dener.
    */
-  GitHubStore.prototype.writeJson = function (file, data, message) {
+  GitHubStore.prototype.writeText = function (file, text, message) {
     var self = this;
-    var content = utf8ToBase64(JSON.stringify(data, null, 1) + '\n');
+    var content = utf8ToBase64(String(text));
     function attempt(retry) {
       var body = { message: message, content: content, branch: self.branch };
       if (self.shas[file]) body.sha = self.shas[file];
@@ -141,12 +147,22 @@
         return res;
       }, function (err) {
         if (retry && (err.status === 409 || err.status === 422)) {
-          return self.readJson(file).then(function () { return attempt(false); });
+          return self.readText(file).then(function () { return attempt(false); });
         }
         throw err;
       });
     }
     return attempt(true);
+  };
+
+  GitHubStore.prototype.writeJson = function (file, data, message) {
+    return this.writeText(file, JSON.stringify(data, null, 1) + '\n', message);
+  };
+
+  /** Tarayıcıda GitHub'ın dosya düzenleme sayfasının adresi. */
+  GitHubStore.editUrl = function (owner, repo, branch, file) {
+    return 'https://github.com/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) +
+      '/edit/' + encodeURIComponent(branch) + '/' + file.split('/').map(encodeURIComponent).join('/');
   };
 
   GitHubStore.utf8ToBase64 = utf8ToBase64;

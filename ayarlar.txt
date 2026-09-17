@@ -1,0 +1,5 @@
+# Lingo oyun ayarları
+# Değeri "evet" ya da "hayır" yapıp kaydedin; # ile başlayan satırlar yok sayılır.
+
+# İki takım modunda sıra rakibe geçince kelimeden rastgele bir harf açılsın mı? (TV kuralı)
+bonus harf: hayır

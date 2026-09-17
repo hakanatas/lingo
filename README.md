@@ -45,15 +45,13 @@ Oyun üç şekilde çalışır. En kolayı **yalnızca GitHub** kullanmaktır.
 
 ### 1. Yalnızca GitHub (GitHub Pages) – önerilen
 
-Sunucu gerekmez. Kelimeler depodaki `kelimeler.json`, ayarlar `ayarlar.json` dosyasında durur; oyun bu dosyaları doğrudan okur.
+Sunucu, şifre ya da token gerekmez. Kelimeler depodaki `kelimeler.txt` (her satıra bir kelime), ayarlar `ayarlar.txt` dosyasında durur; oyun bu dosyaları doğrudan okur.
 
 1. Depoda **Settings → Pages → Build and deployment → Source: Deploy from a branch**, dal `main`, klasör `/ (root)` seçin. Oyun `https://<kullanıcı>.github.io/lingo/` adresinde yayınlanır.
-2. Kelime eklemenin iki yolu vardır:
-   - **Yönetim paneli:** `https://<kullanıcı>.github.io/lingo/admin.html` sayfasını açın, GitHub erişim token'ı ile bağlanın; ekleme, silme ve ayar değişiklikleri depoya commit olarak yazılır. GitHub Pages 1–2 dakika içinde güncellenir.
-   - **Doğrudan düzenleme:** GitHub'da `kelimeler.json` dosyasını açıp kalem simgesiyle düzenleyin ve commit edin. Kelimeler küçük harfle, ilgili uzunluğun listesine yazılır.
-3. Bonus harf kuralı için `ayarlar.json` içindeki `bonusLetter` değerini panelden ya da elle `true` / `false` yapın.
+2. **Kelime eklemek için:** GitHub'da `kelimeler.txt` dosyasını açın, kalem (✎) simgesine basın, yeni kelimeleri her satıra bir tane yazın ve **Commit changes** deyin. Büyük/küçük harf ve sıra önemli değil; 4–7 harf dışındakiler ve Türk alfabesi dışı harf içerenler oyunda yok sayılır. Oyun 1–2 dakika içinde güncellenir.
+3. **Bonus harf için:** `ayarlar.txt` içindeki `bonus harf: hayır` satırını `evet` yapın.
 
-**Token nasıl alınır?** GitHub'da **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**. *Repository access* için yalnızca bu depoyu seçin; *Permissions → Repository permissions → Contents* için "Read and write" verin. Başka izin gerekmez. Token yalnızca sekme açıkken tarayıcıda tutulur; kimseyle paylaşmayın, süresi dolunca yenisini alın.
+`admin.html` sayfası bu iki dosyaya giden "GitHub'da düzenle" düğmelerini ve mevcut kelime listesini gösterir. İsteyen için "Gelişmiş" bölümünde depoya yazabilen bir GitHub token'ı ile doğrudan panelden ekleme/silme de vardır (token: Settings → Developer settings → Personal access tokens → Fine-grained; Repository access: yalnızca bu depo; Permissions → Contents: Read and write).
 
 ### 2. Yerel dosya
 
@@ -80,13 +78,13 @@ set ADMIN_PASSWORD=gizli-şifre && npm start
 |-----------------|------------|----------|
 | `PORT` | `8080` | Dinlenecek port |
 | `ADMIN_PASSWORD` | boş | Yönetim şifresi. Boşsa panel yalnızca listeler; ekleme/silme kapalıdır. |
-| `DATA_DIR` | `./data` | `words.json`, `daily.json` ve `settings.json` klasörü. İlk çalıştırmada `kelimeler.json` ile doldurulur. |
+| `DATA_DIR` | `./data` | `words.json`, `daily.json` ve `settings.json` klasörü. İlk çalıştırmada `kelimeler.txt` ile doldurulur. |
 
 Render, Railway veya Fly.io gibi bir serviste yayınlarken start komutu `node server.js`, şifre ise ortam değişkeni `ADMIN_PASSWORD` olarak girilir.
 
 ### Yönetim paneli (`admin.html`)
 
-Panel hangi ortamda olduğunu kendisi anlar: Node sunucusu varsa şifreyle, yoksa GitHub token'ı ile bağlanır.
+Panel hangi ortamda olduğunu kendisi anlar: Node sunucusu varsa şifreyle çalışır; GitHub Pages'te ise dosyaları GitHub'da düzenlemeye yönlendirir (isteğe bağlı token ile doğrudan panelden de yazabilir).
 
 - **Oyun ayarları:** Herkes için geçerli kurallar. Şimdilik tek ayar var: *Bonus harf* (iki takım modunda sıra geçince rakibe harf açılır). Varsayılan kapalı.
 - **Kelime ekle:** Tek tek ya da toplu yapıştırarak; virgül, boşluk veya satır sonuyla ayrılmış. Kelimeler Türkçe küçük harfe çevrilir; 4–7 harf ve Türk alfabesi dışındakiler nedeniyle birlikte reddedilir, tekrarlar atlanır.
@@ -120,12 +118,12 @@ npm test
 ```
 index.html          Oyun sayfası
 admin.html          Kelime yönetim paneli (GitHub token'ı ya da Node sunucusu şifresiyle)
-kelimeler.json      Kelime havuzu (GitHub Pages modunun veri dosyası; elle de düzenlenebilir)
-ayarlar.json        Oyun ayarları (bonusLetter)
+kelimeler.txt       Kelime havuzu: her satıra bir kelime (GitHub'da doğrudan düzenlenir)
+ayarlar.txt         Oyun ayarları: "bonus harf: evet/hayır"
 js/logic.js         Saf oyun mantığı + kelime deposu yardımcıları (DOM'suz; sunucu ve testler de kullanır)
 js/game.js          Oyun akışı, süre, sıra geçişi, kart/top çekme, arayüz
 js/admin.js         Yönetim paneli (ortamı algılar: GitHub / sunucu)
-js/github-store.js  GitHub Contents API istemcisi (JSON dosyalarını okur, commit atarak yazar)
+js/github-store.js  GitHub Contents API istemcisi (dosyaları okur, commit atarak yazar; isteğe bağlı token yolu)
 js/words.js         Gömülü kelime listesi (yerel dosya kullanımı için yedek)
 css/style.css       Stil, TV / Wordle temaları, duyarlı düzen
 server.js           İsteğe bağlı Node.js arka ucu
@@ -137,8 +135,8 @@ docs/arastirma.md   Lingo kuralları ve örnek uygulamalar araştırma notları
 
 ## Kelime havuzu
 
-Havuz yalnızca cevap kelimesi seçiminde kullanılır; tahminler sözlükle karşılaştırılmaz. Oyun havuzu şu sırayla arar: Node sunucusu (`api/words`) → depodaki `kelimeler.json` → gömülü `js/words.js`.
+Havuz yalnızca cevap kelimesi seçiminde kullanılır; tahminler sözlükle karşılaştırılmaz. Oyun havuzu şu sırayla arar: Node sunucusu (`api/words`) → depodaki `kelimeler.txt` → gömülü `js/words.js`.
 
-Kelime eklemek için `admin.html` panelini kullanın ya da `kelimeler.json` dosyasını doğrudan düzenleyin. `npm test` dosyanın tutarlılığını (uzunluk, alfabe, tekrar) denetler.
+Kelime eklemenin en kolay yolu `kelimeler.txt` dosyasını GitHub'da düzenlemektir. Dosyadaki `#` ile başlayan satırlar açıklamadır; kelimeler istenen yere yazılabilir, oyun uzunluğa göre kendisi gruplar.
 
 Araştırma notları ve kaynaklar için: [docs/arastirma.md](docs/arastirma.md)

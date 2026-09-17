@@ -40,8 +40,8 @@ const MIME = {
 
 /* ---------- Kelime deposu ---------- */
 
-const STATIC_WORDS_FILE = path.join(ROOT, 'kelimeler.json');   // GitHub Pages modunun dosyası; ilk tohum
-const STATIC_SETTINGS_FILE = path.join(ROOT, 'ayarlar.json');
+const STATIC_WORDS_FILE = path.join(ROOT, 'kelimeler.txt');   // GitHub Pages modunun dosyası; ilk tohum
+const STATIC_SETTINGS_FILE = path.join(ROOT, 'ayarlar.txt');
 
 function emptyStore() { return L.emptyWordStore(); }
 
@@ -49,11 +49,10 @@ function loadWords() {
   if (fs.existsSync(WORDS_FILE)) {
     return L.sanitizeWordStore(JSON.parse(fs.readFileSync(WORDS_FILE, 'utf8')));
   }
-  // İlk çalıştırma: kelimeler.json, yoksa gömülü liste ile tohumla.
-  let seed;
-  if (fs.existsSync(STATIC_WORDS_FILE)) seed = JSON.parse(fs.readFileSync(STATIC_WORDS_FILE, 'utf8'));
-  else seed = require('./js/words.js');
-  const store = L.sanitizeWordStore(seed);
+  // İlk çalıştırma: kelimeler.txt, yoksa gömülü liste ile tohumla.
+  const store = fs.existsSync(STATIC_WORDS_FILE)
+    ? L.parseWordsText(fs.readFileSync(STATIC_WORDS_FILE, 'utf8'))
+    : L.sanitizeWordStore(require('./js/words.js'));
   saveWords(store);
   return store;
 }
@@ -88,12 +87,12 @@ const DEFAULT_GAME_SETTINGS = L.DEFAULT_GAME_SETTINGS;
 const sanitizeSettings = L.sanitizeSettings;
 
 function loadSettings() {
-  for (const file of [SETTINGS_FILE, STATIC_SETTINGS_FILE]) {
-    try {
-      const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
-      return Object.assign({}, DEFAULT_GAME_SETTINGS, sanitizeSettings(raw));
-    } catch (e) { /* sıradaki dosya */ }
-  }
+  try {
+    return Object.assign({}, DEFAULT_GAME_SETTINGS, sanitizeSettings(JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'))));
+  } catch (e) { /* data/settings.json yok */ }
+  try {
+    return Object.assign({}, DEFAULT_GAME_SETTINGS, L.parseSettingsText(fs.readFileSync(STATIC_SETTINGS_FILE, 'utf8')));
+  } catch (e) { /* ayarlar.txt yok */ }
   return Object.assign({}, DEFAULT_GAME_SETTINGS);
 }
 
