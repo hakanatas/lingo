@@ -5,22 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Lingo: ilk harfi verilen Türkçe kelimeyi 5 tahminde bul. TV yarışması kurallarıyla (kırmızı kare, sarı daire, Lingo kartı) tarayıcıda oynanan ücretsiz kelime oyunu.">
   <title>Lingo – Türkçe Kelime Oyunu</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23e0242b'/%3E%3Ctext x='32' y='44' font-size='36' font-family='Arial' font-weight='bold' text-anchor='middle' fill='white'%3EL%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f2efe6'/%3E%3Crect x='5' y='9' width='10' height='10' rx='1.5' fill='%23b5432c'/%3E%3Ccircle cx='22' cy='14' r='5' fill='%23c2963a'/%3E%3Cpath d='M5 25h22' stroke='%2322334f' stroke-width='2' opacity='.5'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-theme="tv">
   <header class="topbar">
     <div class="brand">
-      <span class="logo" aria-label="Lingo">
-        <span class="logo-tile correct">L</span><span class="logo-tile present">I</span><span class="logo-tile">N</span><span class="logo-tile correct">G</span><span class="logo-tile present">O</span>
-      </span>
-      <span class="tagline">Türkçe kelime oyunu</span>
+      <span class="kicker">Etkileşimli Kelime Oyunu · TRT 1 formatı</span>
+      <h1>Lingo <span>Tahtası</span></h1>
     </div>
     <nav class="actions" aria-label="Menü">
-      <button id="btn-home" class="icon-btn" title="Ana menü" aria-label="Ana menü">⌂</button>
-      <button id="btn-help" class="icon-btn" title="Nasıl oynanır?" aria-label="Nasıl oynanır">?</button>
-      <button id="btn-stats" class="icon-btn" title="İstatistikler" aria-label="İstatistikler">▤</button>
-      <button id="btn-settings" class="icon-btn" title="Ayarlar" aria-label="Ayarlar">⚙</button>
+      <button id="btn-home" class="icon-btn" title="Ana menü" aria-label="Ana menü">⌂ <span class="btn-lbl">Menü</span></button>
+      <button id="btn-help" class="icon-btn" title="Nasıl oynanır?" aria-label="Nasıl oynanır">? <span class="btn-lbl">Kurallar</span></button>
+      <button id="btn-stats" class="icon-btn" title="İstatistikler" aria-label="İstatistikler">▤ <span class="btn-lbl">İstatistik</span></button>
+      <button id="btn-settings" class="icon-btn" title="Ayarlar" aria-label="Ayarlar">⚙ <span class="btn-lbl">Ayarlar</span></button>
     </nav>
   </header>
 
@@ -32,17 +30,17 @@
 
       <div class="mode-grid">
         <button class="mode-card" data-mode="solo">
-          <span class="mode-icon">1</span>
+          <span class="mode-fig">Mod I</span>
           <span class="mode-name">Tek Oyuncu</span>
           <span class="mode-desc">Süreye karşı kelimeleri çöz, top çek, LINGO yap.</span>
         </button>
         <button class="mode-card" data-mode="duo">
-          <span class="mode-icon">2</span>
+          <span class="mode-fig">Mod II</span>
           <span class="mode-name">İki Takım</span>
           <span class="mode-desc">Aynı cihazda sırayla oynayın. Yanlış tahminde sıra rakibe geçer.</span>
         </button>
         <button class="mode-card" data-mode="daily">
-          <span class="mode-icon">★</span>
+          <span class="mode-fig">Mod III</span>
           <span class="mode-name">Günün Kelimesi</span>
           <span class="mode-desc">Herkes için aynı 5 harfli kelime. Günde bir hak, sonucunu paylaş.</span>
         </button>
@@ -103,6 +101,7 @@
           <div id="draw-panel" class="draw-panel hidden"></div>
         </aside>
       </div>
+      <div class="plate-caption">Lingo · İlk harf verilir, 5 tahmin, kırmızı kare / sarı daire</div>
     </section>
   </main>
 
