@@ -7,7 +7,7 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 
 - Saf HTML / CSS / JavaScript – derleme adımı yok, `index.html` açmak yeterli.
 - Türkçe harf desteği (İ/ı, Ğ, Ş, Ç, Ö, Ü) ve ekran klavyesi; fiziksel klavye de çalışır.
-- Üç mod: **Tek Oyuncu**, **İki Takım** (aynı cihazda sırayla), **Günün Kelimesi** (herkes için aynı kelime, paylaşılabilir sonuç).
+- Dört mod: **Tek Oyuncu**, **İki Takım** (aynı cihazda sırayla), **Günün Kelimesi** (herkes için aynı kelime, paylaşılabilir sonuç) ve sınıflar için **Sınıf Turnuvası** (2–12 takım, takım başına süre, puan tablosu, yarı final ve final).
 
 ## Nasıl oynanır?
 
@@ -29,6 +29,19 @@ Oyun ilk açılışta adım adım, canlı örneklerle bir tanıtım gösterir (i
 **Puan:** harf sayısı × 20 × (6 − deneme sırası). 5 harfli kelimeyi ilk denemede bulmak 500, beşinci denemede bulmak 100 puan.
 
 **İki takım modunda** yanlış tahmin veya süre aşımında sıra rakibe geçer. Yönetim panelinden **bonus harf** açılırsa sıra geçince rakibe kelimeden rastgele bir harf gösterilir (TV kuralı; varsayılan kapalı). Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker. Takımlardan biri çift, diğeri tek sayılı kart kullanır.
+
+## Sınıf Turnuvası (öğretmenler için)
+
+Sınıfı takımlara bölüp yansıdan yönetmek için tasarlandı.
+
+- **2–12 takım**, adları kurulum ekranında girilir; her takımın kendi rengi vardır.
+- **Takım başına süre** (30 sn – 5 dk): her takım bir kelimeyi baştan sona kendi süresinde çözer (en fazla 5 tahmin). Süre "Başla" düğmesiyle akmaya başlar; öğretmen takımı çağırıp hazır olunca başlatır. Süre bitince ya da kelime bulununca sıra tamamen diğer takıma geçer.
+- **Puan:** harf sayısı × 20 × (6 − deneme) + kalan saniye. Böylece hızlı çözen takım öne geçer ve puan farkları netleşir.
+- **Lig turları:** her turda her takım bir kelime çözer; turlar seçilen harf bandında sırayla döner (örneğin 4 → 5 → 6 → 7). Her tur sonunda puan tablosu yansıya çıkar.
+- **Eleme:** lig bitince ilk 4 takım yarı finale (1–4, 2–3), kazananlar finale çıkar. Maçlarda iki takım da aynı uzunlukta birer kelime çözer; beraberlikte birer kelime daha oynanır. 2–3 takımda doğrudan final oynanır. Eleme kapatılabilir.
+- **Kaldığı yerden devam:** turnuva her kelimeden sonra tarayıcıya kaydedilir; sayfa yenilense ya da kapansa bile ana menüden "Kaldığı yerden devam et" ile sürer.
+- **Tekrarsız kelime:** daha önce çıkan kelimeler cihazda hatırlanır; havuz bitmeden aynı kelime yeniden çıkmaz. Kurulum ekranı her uzunlukta kaç kelimenin hazır olduğunu gösterir ve kaydı sıfırlamaya izin verir. Havuzda 4–7 harfli 1800'den fazla kelime vardır; 12 takım × 4 tur bile tekrar üretmez.
+- Kurulum ekranı toplam kelime sayısını ve tahmini süreyi gösterir (örneğin 6 takım × 3 tur + eleme, takım başına 90 sn ≈ 45 dk).
 
 ## Ayarlar
 

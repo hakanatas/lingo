@@ -201,10 +201,10 @@
     },
     {
       title: 'Hazırsın!',
-      text: 'Tek Oyuncu: süreye karşı kelimeleri çöz ve kart doldur. İki Takım: aynı cihazda sırayla oynayın; yanlış tahminde sıra rakibe geçer. Günün Kelimesi: herkes için aynı kelime, günde bir hak, paylaşılabilir sonuç. Fiziksel klavye de çalışır.',
+      text: 'Tek Oyuncu: süreye karşı kelimeleri çöz ve kart doldur. İki Takım: aynı cihazda sırayla oynayın; yanlış tahminde sıra rakibe geçer. Günün Kelimesi: herkes için aynı kelime, günde bir hak. Sınıf Turnuvası: 2–12 takım, takım başına süre, puan tablosu, yarı final ve final. Fiziksel klavye de çalışır.',
       demo: function (box) {
         var grid = el('div', 'intro-modes');
-        [['Mod I', 'Tek Oyuncu'], ['Mod II', 'İki Takım'], ['Mod III', 'Günün Kelimesi']].forEach(function (m, i) {
+        [['Mod I', 'Tek Oyuncu'], ['Mod II', 'İki Takım'], ['Mod III', 'Günün Kelimesi'], ['Mod IV', 'Sınıf Turnuvası']].forEach(function (m, i) {
           var c = el('div', 'intro-mode');
           c.appendChild(el('span', 'mode-fig', m[0]));
           c.appendChild(el('span', 'mode-name', m[1]));

@@ -11,7 +11,9 @@
 
   var MAX_ATTEMPTS = 5;
   var DRAWS_PER_WORD = 2;
-  var TEAM_COLORS = ['#e0242b', '#2f6fd6'];
+  var TEAM_COLORS = ['#b5432c', '#2e6f8e', '#3f7d6d', '#c2963a', '#7a3fd6', '#d1495b', '#1f7a8c', '#8c6d1f', '#4b6f44', '#a23b72', '#5c7cfa', '#e07a5f'];
+  var TOUR_KEY = 'lingo.tournament';
+  var USED_KEY = 'lingo.usedWords';
   var KEY_ROWS = [
     ['E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'Ğ', 'Ü'],
     ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ş', 'İ'],
@@ -99,6 +101,7 @@
         $('opt-names').classList.toggle('hidden', card.dataset.mode !== 'duo');
       });
       card.addEventListener('click', function () {
+        if (card.dataset.mode === 'tournament') { showTourSetup(); return; }
         if (card.dataset.mode === 'duo' && $('opt-names').classList.contains('hidden')) {
           // Dokunmatik cihazlarda önce takım adlarını göster, ikinci dokunuşta başlat.
           $('opt-names').classList.remove('hidden');
@@ -182,6 +185,7 @@
       var rng = L.seededRandom(L.dateSeed(todayKey()));
       return L.pickWord(list, rng);
     }
+    if (state.mode === 'tournament') return chooseUnusedWord(state.length);
     var w;
     var guard = 0;
     do {
@@ -189,6 +193,20 @@
       guard++;
     } while (state.usedWords.indexOf(w) !== -1 && guard < 50);
     state.usedWords.push(w);
+    return w;
+  }
+
+  /** Cihazda daha önce çıkmamış bir kelime seçer; havuz bitince o uzunluğun kaydı sıfırlanır. */
+  function chooseUnusedWord(length) {
+    var used = load(USED_KEY, {});
+    var list = WORDS[length];
+    var usedList = Array.isArray(used[length]) ? used[length] : [];
+    var fresh = list.filter(function (w) { return usedList.indexOf(w) === -1; });
+    if (!fresh.length) { usedList = []; fresh = list.slice(); }
+    var w = L.pickWord(fresh);
+    usedList.push(w);
+    used[length] = usedList;
+    save(USED_KEY, used);
     return w;
   }
 
@@ -221,6 +239,7 @@
 
   /* ---------- Süre ---------- */
   function timerEnabled() {
+    if (state.mode === 'tournament') return true;
     return state.mode !== 'daily' && settings.timer > 0;
   }
 
@@ -229,7 +248,7 @@
     var timerEl = $('timer');
     if (!timerEnabled()) { timerEl.style.visibility = 'hidden'; return; }
     timerEl.style.visibility = 'visible';
-    state.timerTotal = settings.timer * 1000;
+    state.timerTotal = (state.mode === 'tournament' ? state.tour.timePerTeam : settings.timer) * 1000;
     state.timerRemaining = state.timerTotal;
     var last = Date.now();
     renderTimer();
@@ -265,6 +284,14 @@
   }
 
   function onTimeout() {
+    if (state.mode === 'tournament') {
+      // Takımın süresi bitti: tahmin değerlendiriliyorsa sonucu bekle, değilse kelime kapanır.
+      if (state.phase === 'reveal') { state.timeoutPending = true; return; }
+      if (state.phase !== 'guess') return;
+      toast('Süre doldu!');
+      tourWordEnd(false);
+      return;
+    }
     if (state.phase !== 'guess') return;
     toast('Süre doldu!');
     consumeRow('timeout');
@@ -315,7 +342,7 @@
       shakeRow();
       return;
     }
-    stopTimer();
+    if (state.mode !== 'tournament') stopTimer();   // turnuvada süre kelime boyunca akmaya devam eder
     var evaluation = L.evaluateGuess(guess, state.target);
     state.rows.push({ letters: letters, eval: evaluation, status: 'ok', team: state.current });
     state.attempt += 1;
@@ -349,11 +376,12 @@
   }
 
   function afterFailedAttempt() {
+    if (state.mode === 'tournament' && state.timeoutPending) { state.timeoutPending = false; tourWordEnd(false); return; }
     if (state.attempt >= MAX_ATTEMPTS) { onWordFailed(); return; }
     if (state.mode === 'duo') passTurn();
     state.phase = 'guess';
     renderAll();
-    startTimer();
+    if (state.mode !== 'tournament') startTimer();
   }
 
   /** Ekranın ortasında kısa süreliğine takım rengiyle "Sıra: …" duyurusu gösterir. */
@@ -389,6 +417,7 @@
 
   /* ---------- Kelime sonucu ---------- */
   function onWordSolved() {
+    if (state.mode === 'tournament') { tourWordEnd(true); return; }
     var team = state.teams[state.current];
     var points = L.wordScore(state.length, state.attempt);
     team.score += points;
@@ -413,6 +442,7 @@
   }
 
   function onWordFailed() {
+    if (state.mode === 'tournament') { tourWordEnd(false); return; }
     stats.wordsPlayed += 1;
     save('lingo.stats', stats);
     state.phase = 'between';
@@ -605,7 +635,9 @@
     stopTimer();
     state = null;
     $('screen-game').classList.add('hidden');
+    $('screen-tour').classList.add('hidden');
     $('screen-start').classList.remove('hidden');
+    renderTourResume();
   }
 
   /* ---------- Çizim ---------- */
@@ -621,11 +653,11 @@
     var turn = $('turn-label');
     var banner = $('turn-banner');
     var column = $('play-column');
-    if (state.mode === 'duo') {
+    if (state.mode === 'duo' || state.mode === 'tournament') {
       var t = state.teams[state.current];
-      var color = TEAM_COLORS[state.current];
-      turn.innerHTML = '<span class="team-dot" style="background:' + color + '"></span>' + escapeHtml(t.name) + ' tahmin ediyor';
-      banner.innerHTML = '<span class="turn-banner-kicker">Sıra</span><span class="turn-banner-name">' + escapeHtml(t.name) + '</span><span class="turn-banner-hint">' + (state.attempt + 1) + '. tahmin · ' + (MAX_ATTEMPTS - state.attempt) + ' hak kaldı</span>';
+      var color = TEAM_COLORS[state.current % TEAM_COLORS.length];
+      turn.innerHTML = '<span class="team-dot" style="background:' + color + '"></span>' + escapeHtml(t.name) + (state.mode === 'tournament' ? ' · ' + state.length + ' harfli kelime' : ' tahmin ediyor');
+      banner.innerHTML = '<span class="turn-banner-kicker">' + (state.mode === 'tournament' ? tourStageLabel() : 'Sıra') + '</span><span class="turn-banner-name">' + escapeHtml(t.name) + '</span><span class="turn-banner-hint">' + (state.attempt + 1) + '. tahmin · ' + (MAX_ATTEMPTS - state.attempt) + ' hak kaldı</span>';
       banner.style.setProperty('--team-color', color);
       banner.classList.remove('hidden');
       column.style.setProperty('--team-color', color);
@@ -640,7 +672,11 @@
     } else {
       turn.textContent = state.length + ' harfli kelime';
     }
-    $('round-label').textContent = state.mode === 'daily' ? '' : 'Kelime ' + (state.wordIndex + 1) + ' / ' + state.totalWords;
+    if (state.mode === 'tournament') {
+      $('round-label').textContent = tourStageLabel() + ' · ' + tourProgressLabel();
+    } else {
+      $('round-label').textContent = state.mode === 'daily' ? '' : 'Kelime ' + (state.wordIndex + 1) + ' / ' + state.totalWords;
+    }
   }
 
   function renderBoard(popLast) {
@@ -746,6 +782,7 @@
   function renderScoreboard() {
     var sb = $('scoreboard');
     if (state.mode === 'daily') { sb.innerHTML = ''; return; }
+    if (state.mode === 'tournament') { renderStandings(sb); return; }
     sb.innerHTML = state.teams.map(function (t, i) {
       var active = state.mode === 'duo' ? i === state.current : true;
       var duo = state.mode === 'duo';
@@ -759,7 +796,7 @@
 
   function renderCards() {
     var panel = $('card-panel');
-    if (state.mode === 'daily') { panel.innerHTML = ''; return; }
+    if (state.mode === 'daily' || state.mode === 'tournament') { panel.innerHTML = ''; return; }
     panel.innerHTML = '';
     state.teams.forEach(function (t, ti) {
       var box = document.createElement('div');
@@ -847,6 +884,10 @@
       '<h3>İki takım</h3>' +
       '<ul><li>Yanlış tahmin veya süre aşımında sıra rakibe geçer' + (serverConfig.bonusLetter ? '; rakip bir <b>bonus harf</b> kazanır' : '') + '.</li>' +
       '<li>Kelimeyi bulan takım puanı alır ve kendi kartı için top çeker.</li></ul>' +
+      '<h3>Sınıf turnuvası</h3>' +
+      '<ul><li>2–12 takım; her takım bir kelimeyi kendi süresinde baştan sona çözer, süre "Başla" ile akar.</li>' +
+      '<li>Puan = harf sayısı × 20 × (6 − deneme) + kalan saniye. Her tur sonunda puan tablosu, lig sonunda ilk 4 takımla yarı final ve final.</li>' +
+      '<li>Turnuva tarayıcıya kaydedilir; ana menüden kaldığı yerden devam edilir. Çıkan kelimeler tekrar etmez.</li></ul>' +
       '<h3>Klavye</h3><p>Fiziksel klavye de çalışır: harfler, ENTER ve Backspace. Türkçe Q düzeni ekranda hazırdır.</p>' +
       '<div class="btn-row" style="margin-top:14px"><button class="btn" id="btn-help-intro">▶ Adım adım tanıtımı izle</button></div>'
     );
@@ -911,10 +952,430 @@
     });
   }
 
+
+  /* ==================== Sınıf Turnuvası ==================== */
+
+  var tourConfig = load('lingo.tourConfig', { count: 4, names: [], time: 90, lengths: [4, 5, 6, 7], rounds: 2, playoff: true });
+
+  function tourStageLabel() {
+    var st = state.tour;
+    if (st.stage === 'league') return 'Lig · ' + (st.round + 1) + '. tur';
+    if (st.stage === 'semi') return 'Yarı final';
+    if (st.stage === 'final') return 'Final';
+    return 'Turnuva';
+  }
+
+  function tourProgressLabel() {
+    var st = state.tour;
+    if (st.stage === 'league') return (st.turnInRound + 1) + ' / ' + state.teams.length + '. takım';
+    return (st.matchIndex + 1) + '. maç';
+  }
+
+  /* ---------- Kurulum ekranı ---------- */
+  function showTourSetup() {
+    $('screen-start').classList.add('hidden');
+    $('screen-tour').classList.remove('hidden');
+    var countSel = $('tour-count');
+    if (!countSel.options.length) {
+      for (var i = 2; i <= 12; i++) countSel.appendChild(new Option(i + ' takım', i));
+      for (var r = 1; r <= 8; r++) $('tour-rounds').appendChild(new Option(r + ' tur', r));
+      countSel.addEventListener('change', function () { tourConfig.count = Number(countSel.value); renderTourNames(); tourEstimate(); });
+      $('tour-rounds').addEventListener('change', function () { tourConfig.rounds = Number($('tour-rounds').value); tourEstimate(); });
+      $('tour-time').addEventListener('input', function () { tourConfig.time = Number($('tour-time').value); tourTimeLabel(); tourEstimate(); });
+      Array.prototype.forEach.call(document.querySelectorAll('.tour-time-presets button'), function (b) {
+        b.addEventListener('click', function () { tourConfig.time = Number(b.dataset.sec); $('tour-time').value = tourConfig.time; tourTimeLabel(); tourEstimate(); });
+      });
+      Array.prototype.forEach.call($('tour-lengths').querySelectorAll('button'), function (b) {
+        b.addEventListener('click', function () {
+          var n = Number(b.dataset.len);
+          var idx = tourConfig.lengths.indexOf(n);
+          if (idx === -1) tourConfig.lengths.push(n); else if (tourConfig.lengths.length > 1) tourConfig.lengths.splice(idx, 1);
+          tourConfig.lengths.sort();
+          renderTourLengths(); tourEstimate();
+        });
+      });
+      $('tour-playoff').addEventListener('change', function () { tourConfig.playoff = $('tour-playoff').checked; tourEstimate(); });
+      $('tour-start').addEventListener('click', tourStart);
+      $('tour-back').addEventListener('click', goHome);
+      $('tour-reset-used').addEventListener('click', function () {
+        if (!confirm('Daha önce çıkan kelimelerin kaydı silinsin mi?')) return;
+        save(USED_KEY, {}); tourEstimate(); toast('Kelime kaydı sıfırlandı');
+      });
+    }
+    countSel.value = tourConfig.count;
+    $('tour-rounds').value = tourConfig.rounds;
+    $('tour-time').value = tourConfig.time;
+    $('tour-playoff').checked = tourConfig.playoff !== false;
+    tourTimeLabel(); renderTourLengths(); renderTourNames(); tourEstimate();
+  }
+
+  function tourTimeLabel() {
+    var t = tourConfig.time;
+    $('tour-time-val').textContent = t >= 60 ? (t / 60).toLocaleString('tr-TR') + ' dk' : t + ' sn';
+    Array.prototype.forEach.call(document.querySelectorAll('.tour-time-presets button'), function (b) { b.classList.toggle('active', Number(b.dataset.sec) === t); });
+  }
+
+  function renderTourLengths() {
+    Array.prototype.forEach.call($('tour-lengths').querySelectorAll('button'), function (b) {
+      b.classList.toggle('active', tourConfig.lengths.indexOf(Number(b.dataset.len)) !== -1);
+    });
+  }
+
+  function renderTourNames() {
+    var box = $('tour-names');
+    box.innerHTML = '';
+    for (var i = 0; i < tourConfig.count; i++) {
+      var label = document.createElement('label');
+      label.innerHTML = '<span class="team-dot" style="background:' + TEAM_COLORS[i % TEAM_COLORS.length] + '"></span>';
+      var input = document.createElement('input');
+      input.type = 'text'; input.maxLength = 18;
+      input.value = (tourConfig.names[i] || '').trim() || (i + 1) + '. Takım';
+      input.setAttribute('aria-label', (i + 1) + '. takım adı');
+      (function (i, input) { input.addEventListener('input', function () { tourConfig.names[i] = input.value; }); })(i, input);
+      label.appendChild(input);
+      box.appendChild(label);
+    }
+  }
+
+  function tourEstimate() {
+    var c = tourConfig;
+    var leagueWords = c.count * c.rounds;
+    var playoffWords = c.playoff ? (c.count >= 4 ? 6 : 2) : 0;
+    var perWord = c.time + 25;   // hazırlık ve sonuç ekranı payı
+    var minutes = Math.round((leagueWords + playoffWords) * perWord / 60);
+    $('tour-estimate').innerHTML = 'Toplam <b>' + (leagueWords + playoffWords) + '</b> kelime · tahmini <b>' + minutes + ' dk</b>' +
+      '<br><span style="font-size:0.95rem">Lig: ' + c.rounds + ' tur × ' + c.count + ' takım = ' + leagueWords + ' kelime' + (c.playoff ? ' · Eleme: ' + (c.count >= 4 ? 'yarı final (4 kelime) + final (2 kelime)' : 'final (2 kelime)') : '') + '. Turlar ' + c.lengths.join(' → ') + ' harf sırasıyla döner.</span>';
+    var used = load(USED_KEY, {});
+    $('tour-pool').innerHTML = 'Kelime havuzu: ' + [4, 5, 6, 7].map(function (n) {
+      var u = Array.isArray(used[n]) ? used[n].length : 0;
+      return n + ' harf ' + (WORDS[n].length - u) + ' hazır' + (u ? ' (' + u + ' çıktı)' : '');
+    }).join(' · ');
+    save('lingo.tourConfig', tourConfig);
+  }
+
+  /* ---------- Başlatma ve kayıt ---------- */
+  function tourStart() {
+    var c = tourConfig;
+    save('lingo.tourConfig', c);
+    var teams = [];
+    for (var i = 0; i < c.count; i++) {
+      teams.push({ name: (c.names[i] || '').trim() || (i + 1) + '. Takım', score: 0, solved: 0, played: 0, lingos: 0, rank: i + 1 });
+    }
+    state = {
+      mode: 'tournament', length: c.lengths[0], teams: teams, current: 0, phase: 'between',
+      timerHandle: null, timerRemaining: 0, timerTotal: 0, usedWords: [], wordIndex: 0, totalWords: c.count * c.rounds,
+      tour: {
+        timePerTeam: c.time, lengths: c.lengths.slice(), rounds: c.rounds, playoff: c.playoff !== false && c.count >= 2,
+        stage: 'league', round: 0, turnInRound: 0, matchIndex: 0, matches: [], log: [], turn: null
+      }
+    };
+    $('screen-tour').classList.add('hidden');
+    $('screen-game').classList.remove('hidden');
+    tourSave();
+    tourNextTurn();
+  }
+
+  function tourSave() {
+    if (!state || state.mode !== 'tournament') return;
+    save(TOUR_KEY, { teams: state.teams, tour: state.tour, current: state.current, length: state.length, savedAt: Date.now() });
+  }
+
+  function tourClearSaved() { try { localStorage.removeItem(TOUR_KEY); } catch (e) { /* yok say */ } }
+
+  function renderTourResume() {
+    var saved = load(TOUR_KEY, {});
+    var row = $('tour-resume-row');
+    if (!saved || !saved.tour || saved.tour.stage === 'done') { row.classList.add('hidden'); return; }
+    row.classList.remove('hidden');
+    var st = saved.tour;
+    var label = st.stage === 'league' ? 'Lig ' + (st.round + 1) + '. tur' : st.stage === 'semi' ? 'Yarı final' : 'Final';
+    $('tour-resume-info').textContent = 'Sınıf turnuvası · ' + saved.teams.length + ' takım · ' + label;
+  }
+
+  function tourResume() {
+    var saved = load(TOUR_KEY, {});
+    if (!saved.tour || !saved.teams) return;
+    state = {
+      mode: 'tournament', length: saved.length, teams: saved.teams, current: saved.current || 0, phase: 'between',
+      timerHandle: null, timerRemaining: 0, timerTotal: 0, usedWords: [], wordIndex: 0, totalWords: saved.teams.length * saved.tour.rounds,
+      tour: saved.tour
+    };
+    state.tour.turn = null;
+    $('screen-start').classList.add('hidden');
+    $('screen-game').classList.remove('hidden');
+    tourNextTurn();
+  }
+
+  /* ---------- Akış ---------- */
+  function tourStandings(teams) {
+    return (teams || state.teams).slice().sort(function (a, b) { return b.score - a.score || b.solved - a.solved || a.rank - b.rank; });
+  }
+
+  /** Sıradaki oynanacak kelimeyi belirler: { team, length } ya da aşama geçişi. */
+  function tourNextTurn() {
+    var st = state.tour;
+    if (st.stage === 'league') {
+      if (st.round >= st.rounds) { tourLeagueDone(); return; }
+      var length = st.lengths[st.round % st.lengths.length];
+      tourShowReady(st.turnInRound, length);
+      return;
+    }
+    if (st.stage === 'semi' || st.stage === 'final') {
+      var m = st.matches[st.matchIndex];
+      if (!m) { tourStageDone(); return; }
+      var side = m.playedA === m.playedB ? 'a' : 'b';   // sırayla: A, B; uzatmada tekrar A, B
+      if (m.playedA > m.playedB) side = 'b';
+      tourShowReady(side === 'a' ? m.a : m.b, m.length, m);
+      return;
+    }
+    tourEnd();
+  }
+
+  function tourShowReady(teamIndex, length, match) {
+    state.current = teamIndex;
+    state.length = length;
+    state.phase = 'ready';
+    state.tour.turn = { team: teamIndex, length: length, match: match ? state.tour.matches.indexOf(match) : -1 };
+    state.rows = []; state.attempt = 0; state.input = []; state.firstTyped = false; state.keyStates = {}; state.known = null;
+    state.target = null;
+    $('timer').style.visibility = 'hidden';
+    renderStatus(); renderScoreboard(); renderCards(); renderKeyboard();
+    $('board').innerHTML = '';
+    var team = state.teams[teamIndex];
+    var color = TEAM_COLORS[teamIndex % TEAM_COLORS.length];
+    var matchInfo = match ? '<div class="ready-meta">Rakip: <b>' + escapeHtml(state.teams[match.a === teamIndex ? match.b : match.a].name) + '</b>' + (match.scoreA || match.scoreB ? ' · Maç durumu ' + match.scoreA + ' – ' + match.scoreB : '') + '</div>' : '';
+    showModal(
+      '<div class="ready-box" style="--team-color:' + color + '">' +
+      '<div class="ready-kicker">' + tourStageLabel() + ' · Sıra</div>' +
+      '<div class="ready-name">' + escapeHtml(team.name) + '</div>' +
+      '<div class="ready-meta"><b>' + length + ' harfli</b> kelime · <b>' + state.tour.timePerTeam + ' sn</b> · en fazla 5 tahmin</div>' + matchInfo +
+      '<div class="btn-row" style="justify-content:center;margin-top:1.2rem"><button class="btn" id="btn-tour-go" style="font-size:1.25rem;padding:0.8rem 2rem">Başla</button></div>' +
+      '<p class="status" style="margin-top:0.8rem">Enter tuşu da başlatır. Süre "Başla" ile akmaya başlar.</p>' +
+      '</div>'
+    );
+    $('btn-tour-go').addEventListener('click', function () { closeModal(); tourStartWord(); });
+    $('btn-tour-go').dataset.primary = '1';
+    tourSave();
+  }
+
+  function tourStartWord() {
+    if (!state || state.mode !== 'tournament' || state.phase !== 'ready') return;
+    state.target = L.toUpperTr(chooseWord());
+    state.rows = [];
+    state.attempt = 0;
+    state.known = L.knownLetters(state.target, []);
+    state.input = [];
+    state.firstTyped = false;
+    state.keyStates = {};
+    state.timeoutPending = false;
+    state.phase = 'guess';
+    flashTurn(state.teams[state.current].name, TEAM_COLORS[state.current % TEAM_COLORS.length], state.length + ' harfli kelime · ' + state.tour.timePerTeam + ' sn');
+    renderAll();
+    startTimer();
+  }
+
+  function tourWordEnd(solved) {
+    stopTimer();
+    state.phase = 'between';
+    var team = state.teams[state.current];
+    var remaining = Math.max(0, Math.ceil(state.timerRemaining / 1000));
+    var base = solved ? L.wordScore(state.length, state.attempt) : 0;
+    var bonus = solved ? remaining : 0;
+    var points = base + bonus;
+    var st = state.tour;
+    var turn = st.turn || {};
+    var match = turn.match >= 0 ? st.matches[turn.match] : null;
+
+    if (match) {
+      if (match.a === state.current) { match.scoreA += points; match.playedA += 1; } else { match.scoreB += points; match.playedB += 1; }
+    } else {
+      team.score += points;
+    }
+    team.played += 1;
+    if (solved) team.solved += 1;
+    st.log.push({ stage: st.stage, round: st.round, team: state.current, target: state.target, solved: solved, attempt: state.attempt, points: points, remaining: remaining });
+
+    stats.wordsPlayed += 1;
+    if (solved) { stats.wordsSolved += 1; stats.attempts[state.attempt - 1] += 1; }
+    save('lingo.stats', stats);
+
+    // Sıradaki adımı hazırla
+    if (st.stage === 'league') {
+      st.turnInRound += 1;
+      if (st.turnInRound >= state.teams.length) { st.turnInRound = 0; st.round += 1; }
+    } else if (match) {
+      if (match.playedA === match.playedB) {
+        if (match.scoreA !== match.scoreB) { match.winner = match.scoreA > match.scoreB ? match.a : match.b; st.matchIndex += 1; }
+        else { match.overtime = (match.overtime || 0) + 1; }   // beraberlik: iki takım da bir kelime daha oynar
+      }
+    }
+    st.turn = null;
+    tourSave();
+
+    renderAll();
+    if (solved) bounceRow(state.rows.length - 1);
+    var color = TEAM_COLORS[state.current % TEAM_COLORS.length];
+    var roundOver = st.stage === 'league' && st.turnInRound === 0;
+    var nextLabel = roundOver ? 'Puan tablosu' : (match && match.winner !== undefined ? 'Maç sonucu' : 'Sıradaki takım');
+    setTimeout(function () {
+      showModal(
+        '<div class="ready-box" style="--team-color:' + color + '">' +
+        '<div class="ready-kicker">' + escapeHtml(team.name) + '</div>' +
+        '<h2 style="margin:0.3rem 0">' + (solved ? 'Kelime bulundu!' : 'Bulunamadı') + '</h2>' +
+        '<div class="result-word">' + state.target + '</div>' +
+        (solved
+          ? '<div class="result-line"><b>+' + points + '</b> puan <span style="font-size:0.95rem">(' + state.attempt + '. denemede ' + base + (bonus ? ' + kalan ' + remaining + ' sn için ' + bonus : '') + ')</span></div>'
+          : '<div class="result-line">Bu kelime için puan yok.</div>') +
+        (match ? '<div class="result-line">Maç durumu: ' + escapeHtml(state.teams[match.a].name) + ' <b>' + match.scoreA + '</b> – <b>' + match.scoreB + '</b> ' + escapeHtml(state.teams[match.b].name) + (match.overtime && match.winner === undefined && match.playedA === match.playedB ? ' · Berabere, uzatma!' : '') + '</div>' : '') +
+        '<div class="btn-row" style="justify-content:center;margin-top:0.8rem"><button class="btn" id="btn-tour-next">' + nextLabel + ' →</button></div>' +
+        '</div>'
+      );
+      var b = $('btn-tour-next');
+      b.addEventListener('click', function () { closeModal(); tourAfterResult(roundOver, match); });
+      b.dataset.primary = '1';
+    }, solved ? 900 : 400);
+  }
+
+  function tourAfterResult(roundOver, match) {
+    var st = state.tour;
+    if (roundOver) { tourShowStandings(st.round >= st.rounds ? 'Lig tamamlandı' : (st.round) + '. tur sonu puan durumu', function () { tourNextTurn(); }); return; }
+    if (match && match.winner !== undefined) { tourShowBracket(function () { tourNextTurn(); }); return; }
+    tourNextTurn();
+  }
+
+  function tourStandingsTable(highlightTop) {
+    var rows = tourStandings();
+    return '<table class="tour-table"><thead><tr><th>#</th><th>Takım</th><th style="text-align:right">Kelime</th><th style="text-align:right">Puan</th></tr></thead><tbody>' +
+      rows.map(function (t, i) {
+        var idx = state.teams.indexOf(t);
+        return '<tr class="' + (highlightTop && i < highlightTop ? 'qualify' : '') + '"><td>' + (i + 1) + '</td><td><span class="team-dot" style="background:' + TEAM_COLORS[idx % TEAM_COLORS.length] + '"></span>' + escapeHtml(t.name) + '</td><td class="num">' + t.solved + '/' + t.played + '</td><td class="num">' + t.score + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  function tourShowStandings(title, onNext) {
+    var st = state.tour;
+    var leagueDone = st.stage === 'league' && st.round >= st.rounds;
+    var qualify = leagueDone && st.playoff ? Math.min(4, state.teams.length) : 0;
+    var note = leagueDone ? (st.playoff ? (state.teams.length >= 4 ? 'İlk 4 takım yarı finale çıkıyor: 1 – 4 ve 2 – 3 eşleşir.' : 'İlk 2 takım finalde karşılaşıyor.') : 'Turnuva tamamlandı.') : 'Sıradaki tur: ' + st.lengths[st.round % st.lengths.length] + ' harfli kelimeler.';
+    showModal('<h2>' + escapeHtml(title) + '</h2>' + tourStandingsTable(qualify) + '<p>' + note + '</p>' +
+      '<div class="btn-row"><button class="btn" id="btn-tour-next">Devam →</button></div>');
+    var b = $('btn-tour-next');
+    b.addEventListener('click', function () { closeModal(); onNext(); });
+    b.dataset.primary = '1';
+  }
+
+  function tourLeagueDone() {
+    var st = state.tour;
+    var order = tourStandings();
+    order.forEach(function (t, i) { t.rank = i + 1; });
+    if (!st.playoff) { st.stage = 'done'; tourSave(); tourEnd(); return; }
+    var idx = function (t) { return state.teams.indexOf(t); };
+    var len = st.lengths[st.lengths.length - 1];
+    if (state.teams.length >= 4) {
+      st.stage = 'semi';
+      st.matches = [
+        { stage: 'semi', a: idx(order[0]), b: idx(order[3]), scoreA: 0, scoreB: 0, playedA: 0, playedB: 0, length: len },
+        { stage: 'semi', a: idx(order[1]), b: idx(order[2]), scoreA: 0, scoreB: 0, playedA: 0, playedB: 0, length: len }
+      ];
+    } else {
+      st.stage = 'final';
+      st.matches = [{ stage: 'final', a: idx(order[0]), b: idx(order[1]), scoreA: 0, scoreB: 0, playedA: 0, playedB: 0, length: len }];
+    }
+    st.matchIndex = 0;
+    tourSave();
+    tourShowBracket(function () { tourNextTurn(); });
+  }
+
+  function tourStageDone() {
+    var st = state.tour;
+    if (st.stage === 'semi') {
+      var w1 = st.matches[0].winner, w2 = st.matches[1].winner;
+      st.stage = 'final';
+      st.matches.push({ stage: 'final', a: w1, b: w2, scoreA: 0, scoreB: 0, playedA: 0, playedB: 0, length: st.lengths[st.lengths.length - 1] });
+      st.matchIndex = st.matches.length - 1;
+      tourSave();
+      tourShowBracket(function () { tourNextTurn(); });
+      return;
+    }
+    st.stage = 'done';
+    tourSave();
+    tourEnd();
+  }
+
+  function tourMatchHtml(m) {
+    var side = function (i, score, isWinner, right) {
+      return '<div class="side' + (right ? ' right' : '') + (isWinner ? ' winner' : '') + '"><span class="team-dot" style="background:' + TEAM_COLORS[i % TEAM_COLORS.length] + '"></span><span class="name">' + escapeHtml(state.teams[i].name) + '</span><span class="pts">' + score + '</span></div>';
+    };
+    return '<div class="match">' + side(m.a, m.scoreA, m.winner === m.a, false) + '<span class="vs">' + (m.stage === 'final' ? 'FİNAL' : 'YARI FİNAL') + '</span>' + side(m.b, m.scoreB, m.winner === m.b, true) + '</div>';
+  }
+
+  function tourShowBracket(onNext) {
+    var st = state.tour;
+    var html = '<h2>' + (st.stage === 'final' ? 'Final' : 'Yarı final') + ' eşleşmeleri</h2><div class="match-list">' + st.matches.map(tourMatchHtml).join('') + '</div>' +
+      '<p>Her maçta iki takım da aynı uzunlukta (' + st.lengths[st.lengths.length - 1] + ' harf) birer kelime çözer; yüksek puan kazanır. Beraberlikte birer kelime daha oynanır.</p>' +
+      '<div class="btn-row"><button class="btn" id="btn-tour-next">Devam →</button></div>';
+    showModal(html);
+    var b = $('btn-tour-next');
+    b.addEventListener('click', function () { closeModal(); onNext(); });
+    b.dataset.primary = '1';
+  }
+
+  function tourEnd() {
+    stopTimer();
+    state.phase = 'over';
+    var st = state.tour;
+    st.stage = 'done';
+    stats.gamesPlayed += 1;
+    save('lingo.stats', stats);
+    tourClearSaved();
+    var champion = null;
+    var finals = st.matches.filter(function (m) { return m.stage === 'final' && m.winner !== undefined; });
+    if (finals.length) champion = state.teams[finals[finals.length - 1].winner];
+    else champion = tourStandings()[0];
+    var html = '<h2>Turnuva bitti</h2>' +
+      '<p class="winner" style="font-family:var(--serif);font-size:1.6rem;font-weight:700;margin:0 0 0.6rem">🏆 ' + escapeHtml(champion.name) + ' şampiyon!</p>' +
+      (st.matches.length ? '<div class="match-list">' + st.matches.map(tourMatchHtml).join('') + '</div>' : '') +
+      '<h3>Lig puan durumu</h3>' + tourStandingsTable(0) +
+      '<div class="btn-row"><button class="btn" id="btn-tour-again">Yeni turnuva</button><button class="btn secondary" id="btn-menu">Ana menü</button></div>';
+    showModal(html);
+    $('btn-tour-again').addEventListener('click', function () { closeModal(); state = null; $('screen-game').classList.add('hidden'); showTourSetup(); });
+    $('btn-menu').addEventListener('click', function () { closeModal(); goHome(); });
+  }
+
+  /* ---------- Yan panel: puan durumu ---------- */
+  function renderStandings(sb) {
+    var st = state.tour;
+    var rows = tourStandings();
+    var inMatch = st.stage !== 'league' && st.matches[st.matchIndex];
+    var html = '<div class="standings"><h3><span>' + tourStageLabel() + '</span><span>' + (st.stage === 'league' ? st.lengths[st.round % st.lengths.length] + ' harf' : 'eleme') + '</span></h3>';
+    if (inMatch) {
+      html += st.matches.slice(st.stage === 'final' ? -1 : 0).filter(function (m) { return m.stage === st.stage; }).map(tourMatchHtml).join('');
+      html += '<h3 style="margin-top:0.6rem"><span>Lig sıralaması</span></h3>';
+    }
+    html += rows.map(function (t, i) {
+      var idx = state.teams.indexOf(t);
+      var active = idx === state.current && state.phase !== 'over';
+      var out = st.stage !== 'league' && !st.matches.some(function (m) { return (m.a === idx || m.b === idx) && m.stage === st.stage; });
+      return '<div class="standing' + (active ? ' active' : '') + (out ? ' out' : '') + '" style="--team-color:' + TEAM_COLORS[idx % TEAM_COLORS.length] + '">' +
+        '<span class="rank">' + (i + 1) + '</span><span class="team-dot" style="background:' + TEAM_COLORS[idx % TEAM_COLORS.length] + '"></span>' +
+        '<span class="name">' + escapeHtml(t.name) + (active ? '<span class="team-turn-tag">Sırada</span>' : '') + '<span class="meta">' + t.solved + '/' + t.played + ' kelime</span></span>' +
+        '<span class="pts">' + t.score + '</span></div>';
+    }).join('');
+    html += '</div>';
+    sb.innerHTML = html;
+  }
+
+  $('btn-tour-resume').addEventListener('click', tourResume);
+  renderTourResume();
+
   /* ---------- Olaylar ---------- */
   document.addEventListener('keydown', function (e) {
     if (window.LingoIntro && window.LingoIntro.isOpen()) return;
-    if (modalOpen()) { if (e.key === 'Escape') closeModal(); return; }
+    if (modalOpen()) {
+      if (e.key === 'Escape') $('modal-close').click();
+      else if (e.key === 'Enter') { var primary = document.querySelector('#modal [data-primary]'); if (primary) { e.preventDefault(); primary.click(); } }
+      return;
+    }
     if (!state) return;
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -931,7 +1392,8 @@
   $('btn-settings').addEventListener('click', showSettings);
   $('btn-home').addEventListener('click', function () {
     if (state && state.phase !== 'over' && state.mode !== 'daily') {
-      if (!confirm('Oyundan çıkılsın mı? İlerleme kaybolur.')) return;
+      var msg = state.mode === 'tournament' ? 'Turnuvadan çıkılsın mı? Puanlar saklanır; ana menüden kaldığı yerden devam edebilirsiniz.' : 'Oyundan çıkılsın mı? İlerleme kaybolur.';
+      if (!confirm(msg)) return;
     }
     closeModal();
     goHome();
@@ -940,7 +1402,11 @@
     // Sonuç pencereleri kapatılınca akış devam etsin.
     var next = $('modal-next');
     var cont = $('btn-continue');
+    var tourStart = $('btn-tour-go');
+    var tourNext = $('btn-tour-next');
     closeModal();
+    if (tourStart) { tourStartWord(); return; }
+    if (tourNext) { tourNextTurn(); return; }
     if (next) nextWord();
     else if (state && state.phase === 'over') goHome();
     else if (cont) { /* çekiliş paneli görünür kalır */ }

@@ -45,7 +45,13 @@
           <span class="mode-name">Günün Kelimesi</span>
           <span class="mode-desc">Herkes için aynı 5 harfli kelime. Günde bir hak, sonucunu paylaş.</span>
         </button>
+        <button class="mode-card mode-card-wide" data-mode="tournament">
+          <span class="mode-fig">Mod IV · Sınıf</span>
+          <span class="mode-name">Sınıf Turnuvası</span>
+          <span class="mode-desc">2–12 takım, takım başına süre, puan tablosu, 4→7 harf turları, yarı final ve final. Öğretmen yönetir, yansıya yakışır.</span>
+        </button>
       </div>
+      <p class="start-intro hidden" id="tour-resume-row"><button class="btn secondary" id="btn-tour-resume">▶ Kaldığı yerden devam et</button> <span class="status" id="tour-resume-info"></span></p>
 
       <div class="start-options">
         <div class="opt">
@@ -78,6 +84,55 @@
         </div>
       </div>
       <p class="start-footer"><a id="admin-link" class="hidden" href="admin.html">Kelime yönetimi</a></p>
+    </section>
+
+    <!-- Sınıf turnuvası kurulumu -->
+    <section id="screen-tour" class="screen hidden">
+      <h1 class="start-title">Sınıf <em>Turnuvası</em></h1>
+      <p class="start-sub">Her takım kendi süresinde bir kelimeyi baştan sona çözer, puanlar tabloda birikir. Lig turları bitince ilk dört takım yarı final ve finale çıkar.</p>
+      <div class="tour-setup">
+        <div class="tour-block">
+          <div class="opt">
+            <label for="tour-count">Takım sayısı</label>
+            <select id="tour-count"></select>
+          </div>
+          <div class="opt">
+            <label>Takım adları</label>
+            <div class="tour-names" id="tour-names"></div>
+          </div>
+        </div>
+        <div class="tour-block">
+          <div class="opt">
+            <label for="tour-time">Takım başına süre: <strong id="tour-time-val">90 sn</strong></label>
+            <input type="range" id="tour-time" min="30" max="300" step="15" value="90">
+            <div class="segmented tour-time-presets">
+              <button data-sec="45">45 sn</button><button data-sec="60">1 dk</button><button data-sec="90">1,5 dk</button><button data-sec="120">2 dk</button><button data-sec="180">3 dk</button>
+            </div>
+          </div>
+          <div class="opt">
+            <label>Harf bandı (turlar sırayla döner)</label>
+            <div class="segmented" id="tour-lengths">
+              <button data-len="4" class="active">4</button><button data-len="5" class="active">5</button><button data-len="6" class="active">6</button><button data-len="7" class="active">7</button>
+            </div>
+          </div>
+          <div class="opt">
+            <label for="tour-rounds">Lig turu sayısı (her turda her takım bir kelime)</label>
+            <select id="tour-rounds"></select>
+          </div>
+          <div class="opt">
+            <label class="tour-check"><input type="checkbox" id="tour-playoff" checked> Lig sonunda eleme: ilk 4 → yarı final → final</label>
+          </div>
+        </div>
+        <div class="tour-block tour-summary">
+          <div id="tour-estimate" class="tour-estimate"></div>
+          <div id="tour-pool" class="tour-pool"></div>
+          <div class="btn-row">
+            <button class="btn" id="tour-start">Turnuvayı başlat</button>
+            <button class="btn ghost" id="tour-back">Geri</button>
+            <button class="btn ghost" id="tour-reset-used" title="Daha önce çıkan kelimeler yeniden çıkabilir">Kullanılan kelimeleri sıfırla</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Oyun ekranı -->
