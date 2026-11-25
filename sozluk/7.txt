@@ -2144,6 +2144,7 @@ alttaki
 altüste
 altüstü
 altyapı
+altyazı
 alümina
 alüvyon
 alyansa
@@ -5458,6 +5459,7 @@ bandosu
 bandoya
 bandoyu
 bandrol
+bangkok
 banılan
 banılıp
 banımda
@@ -5995,6 +5997,7 @@ batsını
 battala
 battalı
 battığı
+batuhan
 baturca
 baturda
 baturla
@@ -6322,6 +6325,7 @@ belgili
 belgine
 belgini
 belgisi
+belgrad
 belidir
 beliğin
 belikle
@@ -8826,6 +8830,7 @@ caizken
 caizmiş
 cakadır
 cakalar
+cakarta
 cakasız
 cakayla
 caliden
@@ -18736,6 +18741,7 @@ florası
 floraya
 florayı
 florışı
+florida
 floride
 florine
 florini
@@ -23129,6 +23135,7 @@ hükumet
 hükümcü
 hükümde
 hükümdü
+hükümet
 hükümle
 hükümlü
 hükümse
@@ -23161,6 +23168,7 @@ hürlüyü
 hürmete
 hürmeti
 hürünün
+hüseyin
 hüseyni
 hüsnüne
 hüsnüyü
@@ -23523,6 +23531,7 @@ ibnenin
 ibnesin
 ibneyim
 ibradan
+ibrahim
 ibralar
 ibramın
 ibranca
@@ -35143,6 +35152,7 @@ morunun
 morunuz
 morusun
 moruyla
+moskova
 motamot
 motelci
 motelde
@@ -35366,6 +35376,7 @@ musluğa
 musluğu
 musonla
 musonun
+mustafa
 musunuz
 muşamba
 muşları
@@ -50468,6 +50479,7 @@ tözünde
 tözünle
 tözünün
 tözüyle
+trablus
 trabzon
 trafiğe
 trafiği
@@ -53303,6 +53315,7 @@ varsıla
 varsılı
 varsına
 varsını
+varşova
 vartana
 vartanı
 vartaya

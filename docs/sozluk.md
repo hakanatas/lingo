@@ -5,15 +5,31 @@ Oyunda iki ayrı liste vardır.
 | Dosya | Ne işe yarar | Boyut |
 |-------|--------------|-------|
 | `kelimeler.txt` | **Cevap havuzu.** Oyunun seçtiği gizli kelimeler. Öğretmen düzenler. | 6.915 kelime |
-| `sozluk/4.txt` … `sozluk/7.txt` | **Kabul edilen tahminler.** Oyuncunun yazabileceği kelimeler. | 105.543 kelime |
+| `sozluk/4.txt` … `sozluk/7.txt` | **Kabul edilen tahminler.** Oyuncunun yazabileceği kelimeler. | 105.673 kelime |
 
 Bir tahmin şu durumda kabul edilir: sözlükte varsa, cevap havuzunda varsa ya da aranan kelimenin kendisiyse. Sözlükte olmayan kelime **hak yakmaz**; oyuncu yeniden dener. Denetim `ayarlar.txt` içindeki `sözlük kontrolü` satırıyla kapatılabilir.
 
 ## Sözlüğün kapsamı
 
-Uzunluğa göre: 4 harf 3.969, 5 harf 14.273, 6 harf 29.925, 7 harf 57.376.
+Uzunluğa göre: 4 harf 3.986, 5 harf 14.337, 6 harf 29.961, 7 harf 57.389.
 
-Sözlükte yalnızca sözlük maddeleri değil, **çekimli biçimler** de vardır: `evler`, `geldi`, `kitabı`, `okulda`, `yazdım`, `gidiyor`, `kalemi`, `koştum` gibi. Böylece oyuncu doğal yazdığında reddedilmez. Yaygın özel adlar (`ankara`, `türkiye`) tahmin olarak kabul edilir ama cevap havuzunda yer almaz.
+Sözlükte yalnızca sözlük maddeleri değil, **çekimli biçimler** de vardır: `evler`, `geldi`, `kitabı`, `okulda`, `yazdım`, `gidiyor`, `kalemi`, `koştum` gibi. Böylece oyuncu doğal yazdığında reddedilmez. Yaygın özel adlar da tahmin olarak kabul edilir, ama cevap havuzunda yer almaz: Türkiye'nin illeri (`ankara`, `izmir`, `trabzon`), sık kullanılan kişi adları (`ahmet`, `ayşe`, `zeynep`) ve dünya yer adlarının Türkçe yazımı (`londra`, `moskova`, `kudüs`).
+
+## Ne kadar yeterli?
+
+Sözlük, OpenSubtitles Türkçe derlemindeki 115 milyon sözcük kullanımının **%92,4'ünü** karşılıyor. Kalan %7,6'nın neredeyse tamamı reddedilmesi gereken şeyler:
+
+| Reddedilen | Örnek | Doğru mu? |
+|------------|-------|-----------|
+| Yabancı kişi adları | john, michael, charlie | Evet, Türkçe kelime değil |
+| Yazım hataları | birşey, herşey, sağol, burda, yanlız | Evet, oyun yazımı da öğretiyor |
+| Altyazı bozuklukları | nasıi, iütfen, güçiü | Evet, OCR hatası |
+| Ek parçaları | daki, ların, nden | Evet, tek başına kelime değil |
+| Engel listesi | — | Evet, bilerek |
+
+En sık reddedilen 880 kelime elle gözden geçirildi; içlerinden yalnızca üç gerçek eksik çıktı (`hükümet`, `altyazı`, `üstad`) ve eklendi.
+
+Sınıfta kullanılacak günlük kelimelerle yapılan sınamada (okul, aile, yiyecek, hayvan, doğa, çekimli fiiller, çoğul ve iyelik ekleri, sıfatlar, gündelik eşyalar, soyut kavramlar) **176 kelimenin 176'sı** kabul edildi.
 
 Dosyalar uzunluğa göre ayrıdır ve oyun yalnızca oynanan uzunluğu indirir: 5 harfli bir oyun 92 KB (sıkıştırılmış 36 KB) yükler. Sözlük arka planda yüklenir; yüklenene kadar ya da dosya bulunamazsa denetim yapılmaz, oyun çalışmaya devam eder.
 

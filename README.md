@@ -136,7 +136,7 @@ npm test
 index.html          Oyun sayfası
 admin.html          Kelime yönetim paneli (GitHub token'ı ya da Node sunucusu şifresiyle)
 kelimeler.txt       Cevap havuzu: her satıra bir kelime (GitHub'da doğrudan düzenlenir)
-sozluk/4-7.txt      Kabul edilen tahminler: 105.543 kelimelik Türkçe sözlük
+sozluk/4-7.txt      Kabul edilen tahminler: 105.673 kelimelik Türkçe sözlük
 ayarlar.txt         Oyun ayarları: "bonus harf: evet/hayır"
 js/logic.js         Saf oyun mantığı + kelime deposu yardımcıları (DOM'suz; sunucu ve testler de kullanır)
 js/game.js          Oyun akışı, süre, sıra geçişi, kart/top çekme, arayüz
@@ -154,7 +154,7 @@ docs/arastirma.md   Lingo kuralları ve örnek uygulamalar araştırma notları
 
 ## Kelime havuzu
 
-İki ayrı liste vardır: **cevap havuzu** (`kelimeler.txt`, 6.915 kelime) oyunun seçtiği gizli kelimelerdir; **sözlük** (`sozluk/4.txt` … `sozluk/7.txt`, 105.543 kelime) oyuncunun yazabileceği kelimelerdir. Ayrıntılar ve kaynaklar: [docs/sozluk.md](docs/sozluk.md).
+İki ayrı liste vardır: **cevap havuzu** (`kelimeler.txt`, 6.915 kelime) oyunun seçtiği gizli kelimelerdir; **sözlük** (`sozluk/4.txt` … `sozluk/7.txt`, 105.673 kelime) oyuncunun yazabileceği kelimelerdir. Ayrıntılar ve kaynaklar: [docs/sozluk.md](docs/sozluk.md).
 
 Oyun cevap havuzunu şu sırayla arar: Node sunucusu (`api/words`) → depodaki `kelimeler.txt` → gömülü `js/words.js`. Sözlük yalnızca oynanan uzunluk için arka planda yüklenir; dosya yoksa denetim kendiliğinden kapanır.
 

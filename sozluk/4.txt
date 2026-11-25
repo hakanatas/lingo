@@ -471,6 +471,7 @@ ayni
 ayol
 ayrı
 aysa
+ayşe
 ayva
 azal
 azam
@@ -501,6 +502,7 @@ azme
 azmi
 azol
 azot
+azra
 azsa
 baba
 babı
@@ -1144,6 +1146,7 @@ endi
 enek
 enen
 ener
+enes
 eneş
 enet
 enez
@@ -1207,6 +1210,7 @@ esma
 esme
 esna
 esne
+esra
 esre
 esri
 esse
@@ -1875,10 +1879,12 @@ ipse
 ipsi
 ipte
 ipti
+irak
 iran
 irap
 irat
 irca
+irem
 irim
 irin
 iris
@@ -1911,6 +1917,7 @@ işçi
 işen
 işer
 işet
+işıl
 işim
 işin
 işit
@@ -1987,6 +1994,7 @@ judo
 jule
 juro
 jüri
+kaan
 kaba
 kabı
 kabl
@@ -2103,6 +2111,7 @@ kıyı
 kıza
 kızı
 kide
+kiev
 kiğı
 kike
 kiki
@@ -2440,6 +2449,7 @@ muma
 mumu
 murç
 murt
+musa
 muşa
 muşu
 muta
@@ -2523,6 +2533,7 @@ notu
 nova
 nötr
 nura
+nuri
 nuru
 nücü
 nüks
@@ -2563,6 +2574,7 @@ ohmu
 ohta
 ohun
 ojit
+okan
 okar
 okçu
 okey
@@ -2735,6 +2747,7 @@ ozon
 ölüp
 ölür
 ölüş
+ömer
 ömre
 ömrü
 ömür
@@ -2922,6 +2935,7 @@ poya
 poyu
 poza
 pozu
+prag
 pres
 prim
 priz
@@ -2955,6 +2969,7 @@ rakı
 raks
 rami
 ramp
+rana
 rant
 rapa
 rapı
@@ -3112,6 +3127,7 @@ sese
 sesi
 sete
 seti
+seul
 seve
 sevi
 sevk
@@ -3324,6 +3340,7 @@ süze
 şiir
 şike
 şile
+şili
 şilt
 şirk
 şist
