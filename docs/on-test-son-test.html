@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lingo Araştırması – Ön Test ve Son Test</title>
+<style>
+body { font-family: Georgia, 'Times New Roman', serif; color: #22334f; font-size: 11pt; line-height: 1.45; }
+h1 { font-size: 20pt; color: #22334f; }
+h2 { font-size: 15pt; color: #b5432c; }
+h3 { font-size: 12.5pt; color: #2e6f8e; }
+h4 { font-size: 11pt; color: #51607a; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #c9c3b2; padding: 5px 7px; font-size: 10pt; vertical-align: top; }
+th { background: #ece8db; }
+.kutu { background: #faf8f1; border: 1px solid #c9c3b2; padding: 8px 10px; }
+.kucuk { font-size: 9.5pt; color: #51607a; }
+ol, ul { margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<h1>Lingo Araştırması – Ön Test ve Son Test</h1>
+<p><i>Veri Toplama Araçları Taslağı · Kelime ve Yazım Başarı Testi (KYBT) ile Kelime Üretme Akıcılığı Görevi · Sürüm 1.0 · Kasım 2026</i></p>
+<p class="kucuk">FTC #24230 AG Robotik · Lingo Türkçe Kelime Oyunu · Bu belge TÜBİTAK 2204-A başvurusu ve MEB Araştırma Uygulama İzni dosyası için hazırlanmıştır.</p>
+
+
+<h2>1. Araçlar Hakkında</h2>
+
+<p>Araştırma <b>ön test – son test kontrol gruplu yarı deneysel</b> desende yürütülecektir. Deney grubu Lingo oyununu kullanır, kontrol grubu aynı kelimelerle geleneksel çalışma yapar. Aşağıdaki iki araç her iki gruba, uygulamadan önce ve sonra verilir.</p>
+
+<table>
+<tr><th style="width:22%">Araç</th><th style="width:30%">Ölçtüğü şey</th><th style="width:16%">Madde / süre</th><th>Puan</th></tr>
+<tr><td>Kelime ve Yazım Başarı Testi (KYBT)</td><td>Yazım bilgisi, kelime anlamı bilgisi, harf ipucundan kelime üretme</td><td>30 madde / 22 dk</td><td>0–30</td></tr>
+<tr><td>Kelime Üretme Akıcılığı Görevi (KÜAG)</td><td>Verilen harfle başlayan kelimeye erişim hızı</td><td>1 harf / 3 dk</td><td>Kabul edilen kelime sayısı (ayrı değerlendirilir)</td></tr>
+</table>
+
+<h3>Paralel formlar</h3>
+<p>Aynı maddeleri iki kez sormak öğrenme değil hatırlama ölçer. Bu yüzden iki eşdeğer form hazırlanmıştır:</p>
+<ul>
+<li><b>A Formu</b> → ön test (tüm gruplara)</li>
+<li><b>B Formu</b> → son test (tüm gruplara)</li>
+</ul>
+<p>İki form yapı olarak birebir aynıdır (aynı bölümler, aynı madde sayıları, aynı madde tipleri); maddeler farklıdır. İki formdaki hiçbir kelime tekrarlanmaz — A Formunda sorulan bir kelime B Formunda hiçbir bölümde geçmez. Böylece son testteki başarı, ön testte o kelimeyi görmüş olmaktan kaynaklanmaz.</p>
+
+<h3>Maddeler nereden geldi?</h3>
+<p>Maddeler yazılımın kendi veri dosyalarından türetildi; bu, testin ölçtüğü şeyle müdahalenin öğrettiği şeyi aynı evrene oturtur (kapsam geçerliği):</p>
+<ul>
+<li><b>Yazım maddeleri:</b> Oyunun 105.673 kelimelik sözlüğünün <i>reddettiği</i> yaygın yanlış yazımlardan seçildi (birşey, herşey, yanlız, sağol, herkez, traş, süpriz, şarz, klavuz…). Oyun bu dizileri kabul etmediği için öğrenci oynarken doğru biçimi öğrenmek zorundadır; test de tam bunu ölçer.</li>
+<li><b>Kelime anlamı ve harf ipucu maddeleri:</b> Oyunun 6.915 kelimelik cevap havuzundan seçildi.</li>
+<li><b>Akıcılık harfleri:</b> İki form arasında dengelenmesi için sözlük ve havuz sayımları yapıldı. 5 harfli kelimelerde <b>B</b> harfi 907 sözlük / 163 havuz, <b>T</b> harfi 847 sözlük / 150 havuz kelime içeriyor. Sayıları birbirine en yakın çift bu olduğu için A Formunda <b>B</b>, B Formunda <b>T</b> harfi kullanıldı.</li>
+</ul>
+
+<h3>Yazım maddelerinin yazılımla doğrulanması</h3>
+<p>Her yazım maddesinin 24 seçeneği, oyunun sözlük dosyalarına karşı kod ile tek tek sınandı. Sonuç: <b>doğru biçimlerin tamamı sözlükte var, yanlış biçimlerin hiçbiri yok.</b> Yani öğrenci oyunda yanlış biçimi yazdığında kelime reddedilir, doğru biçimi yazdığında kabul edilir. Testin ölçtüğü davranış, oyunun öğrettiği davranışın birebir aynısıdır.</p>
+<table>
+<tr><th style="width:12%">Form</th><th style="width:12%">Madde</th><th style="width:20%">Oyunun reddettiği</th><th style="width:20%">Oyunun kabul ettiği</th><th>Not</th></tr>
+<tr><td>A</td><td>1</td><td>birşey</td><td>bir şey</td><td>Oyun tek kelime olarak yazılışı reddeder</td></tr>
+<tr><td>A</td><td>2</td><td>yanlız</td><td>yalnız</td><td>Her ikisi de 6 harf, oyunda doğrudan sınanabilir</td></tr>
+<tr><td>A</td><td>3</td><td>herkez</td><td>herkes</td><td>Her ikisi de 6 harf</td></tr>
+<tr><td>A</td><td>4</td><td>süpriz</td><td>sürpriz</td><td>6 ve 7 harf, iki bantta da sınanabilir</td></tr>
+<tr><td>A</td><td>5</td><td>yalnış</td><td>yanlış</td><td>Her ikisi de 6 harf</td></tr>
+<tr><td>A</td><td>6</td><td>şarz</td><td>şarj</td><td>Her ikisi de 4 harf</td></tr>
+<tr><td>A</td><td>7</td><td>yoğurd</td><td>yoğurt</td><td>Her ikisi de 6 harf</td></tr>
+<tr><td>A</td><td>8</td><td>sende (bu anlamda)</td><td>sen de</td><td>Ayrı yazılan de bağlacı</td></tr>
+<tr><td>A</td><td>9</td><td>yaptınmı</td><td>yaptın mı</td><td>Ayrı yazılan soru eki</td></tr>
+<tr><td>A</td><td>10</td><td>poaça</td><td>poğaça</td><td>5 ve 6 harf</td></tr>
+<tr><td>A</td><td>11</td><td>eşorfman</td><td>eşofman</td><td>Doğru biçim 7 harf, oyunda sınanabilir</td></tr>
+<tr><td>A</td><td>12</td><td>kirbit</td><td>kibrit</td><td>Her ikisi de 6 harf</td></tr>
+<tr><td>B</td><td>1</td><td>herşey</td><td>her şey</td><td>Oyun tek kelime olarak yazılışı reddeder</td></tr>
+<tr><td>B</td><td>2</td><td>traş</td><td>tıraş</td><td>4 ve 5 harf</td></tr>
+<tr><td>B</td><td>3</td><td>sağol</td><td>sağ ol</td><td>Oyun birleşik yazılışı reddeder</td></tr>
+<tr><td>B</td><td>4</td><td>kiyafet</td><td>kıyafet</td><td>Her ikisi de 7 harf</td></tr>
+<tr><td>B</td><td>5</td><td>klavuz</td><td>kılavuz</td><td>6 ve 7 harf</td></tr>
+<tr><td>B</td><td>6</td><td>klavya</td><td>klavye</td><td>Her ikisi de 6 harf</td></tr>
+<tr><td>B</td><td>7</td><td>çünki</td><td>çünkü</td><td>Her ikisi de 5 harf</td></tr>
+<tr><td>B</td><td>8</td><td>oda (bu anlamda)</td><td>o da</td><td>Ayrı yazılan da bağlacı</td></tr>
+<tr><td>B</td><td>9</td><td>anladınmı</td><td>anladın mı</td><td>Ayrı yazılan soru eki</td></tr>
+<tr><td>B</td><td>10</td><td>tiatro</td><td>tiyatro</td><td>6 ve 7 harf</td></tr>
+<tr><td>B</td><td>11</td><td>mahçup</td><td>mahcup</td><td>Her ikisi de 6 harf</td></tr>
+<tr><td>B</td><td>12</td><td>sebest / serbes</td><td>serbest</td><td>6 ve 7 harf</td></tr>
+</table>
+<p class="kucuk">Bölüm 3 ve Bölüm 4'ün tüm cevapları (ahenk, idrak, kanaat, riayet, mahcup, mağrur, berrak, müptela, hantal, ihtiyat, zarafet, marifet, nezaket, sadakat, mahrum, atıl, fani, hüner, tedbir, yoksun, çevik, cömert, mahir, titiz, uysal, dürüst, narin, meraklı) aynı yöntemle sınandı ve 28 kelimenin tamamının oyunun 6.915 kelimelik cevap havuzunda yer aldığı doğrulandı.</p>
+
+<h3>Bölüm sırası neden böyle?</h3>
+<p>Akıcılık görevi kitapçığın <b>en başına</b> konmuştur. Diğer bölümlerdeki kelimeler okunduktan sonra yapılırsa, öğrenci oradan harf çağrışımı taşır ve görev kirlenir. Bu yüzden önce 3 dakikalık akıcılık yapılır, sonra kitapçığın kalanına geçilir.</p>
+
+
+<h1>2. A FORMU (ÖN TEST)</h1>
+
+<div class="kutu">
+<p><b>Öğrenci kodu:</b> ............................ &nbsp;&nbsp; <b>Sınıf / Şube:</b> ..................... &nbsp;&nbsp; <b>Tarih:</b> ...... / ...... / 20......</p>
+<p class="kucuk">Bu kâğıda adını yazma. Sana verilen öğrenci kodunu yaz. Kodun amacı, ön test ve son test kâğıtlarını isim kullanmadan eşleştirmektir. Katılım gönüllüdür; istemezsen bırakabilirsin. Bu test notunu etkilemez.</p>
+</div>
+
+<h2>Bölüm 1 — Kelime Üretme Akıcılığı (3 dakika)</h2>
+<p><b>Yönerge:</b> Aşağıya <b>B</b> harfi ile başlayan, Türkçede gerçekten var olan kelimeleri yaz. Süre 3 dakikadır. Özel isim (Bursa, Burak gibi) yazma. Aynı kelimenin ekli hâllerini ayrı ayrı yazma (bal, balı, ballar → yalnızca biri sayılır). Aklına geldiği sırayla, durmadan yaz.</p>
+<p>1. .................... &nbsp; 2. .................... &nbsp; 3. .................... &nbsp; 4. .................... &nbsp; 5. ....................</p>
+<p>6. .................... &nbsp; 7. .................... &nbsp; 8. .................... &nbsp; 9. .................... &nbsp; 10. ....................</p>
+<p>11. .................... &nbsp; 12. .................... &nbsp; 13. .................... &nbsp; 14. .................... &nbsp; 15. ....................</p>
+<p>16. .................... &nbsp; 17. .................... &nbsp; 18. .................... &nbsp; 19. .................... &nbsp; 20. ....................</p>
+<p>21. .................... &nbsp; 22. .................... &nbsp; 23. .................... &nbsp; 24. .................... &nbsp; 25. ....................</p>
+<p class="kucuk">(Süre bitince kalemi bırak ve bir sonraki sayfaya geç. Bu sayfaya geri dönme.)</p>
+
+<h2>Bölüm 2 — Yazım Bilgisi (12 madde, 8 dakika)</h2>
+<p><b>Yönerge:</b> Her cümlede boş bırakılan yere gelecek sözün <b>doğru yazılmış</b> biçimini işaretle.</p>
+
+<ol>
+<li>Bu konuda ............ bilmiyorum.<br>
+A) birşey &nbsp; B) bir şey &nbsp; C) birşiy &nbsp; D) bi şey</li>
+
+<li>Bütün akşam evde ............ kaldım.<br>
+A) yanlız &nbsp; B) yalnız &nbsp; C) yalınız &nbsp; D) yannız</li>
+
+<li>Toplantıda ............ hazırdı.<br>
+A) herkez &nbsp; B) herkes &nbsp; C) hepkes &nbsp; D) herkeş</li>
+
+<li>Doğum günümde bana güzel bir ............ yaptılar.<br>
+A) süpriz &nbsp; B) sürpriz &nbsp; C) sürpiriz &nbsp; D) süprüz</li>
+
+<li>Hesap hatası yüzünden cevabım ............ çıktı.<br>
+A) yalnış &nbsp; B) yanlış &nbsp; C) yannış &nbsp; D) yanılş</li>
+
+<li>Telefonumun pili bitmişti, hemen ............ ettim.<br>
+A) şarz &nbsp; B) şarj &nbsp; C) şarç &nbsp; D) şarş</li>
+
+<li>Yemeğin yanına bir kâse ............ koydu.<br>
+A) yoğurd &nbsp; B) yoğurt &nbsp; C) yoğrut &nbsp; D) yoğurut</li>
+
+<li>............ bizimle gelir misin?<br>
+A) Sende &nbsp; B) Sen de &nbsp; C) Sen'de &nbsp; D) Senda</li>
+
+<li>Ödevini ............ ?<br>
+A) yaptınmı &nbsp; B) yaptın mı &nbsp; C) yaptın-mı &nbsp; D) yaptınmi</li>
+
+<li>Kahvaltıda sıcak bir ............ yedim.<br>
+A) poaça &nbsp; B) poğaça &nbsp; C) pogaça &nbsp; D) poğça</li>
+
+<li>Spor yaparken rahat bir ............ giyerim.<br>
+A) eşorfman &nbsp; B) eşofman &nbsp; C) eşortman &nbsp; D) eşofmen</li>
+
+<li>Mumu bir ............ ile yaktı.<br>
+A) kirbit &nbsp; B) kibrit &nbsp; C) kibirt &nbsp; D) kirbıt</li>
+</ol>
+
+<h2>Bölüm 3 — Kelime Anlamı (10 madde, 8 dakika)</h2>
+<p><b>Yönerge:</b> Koyu yazılmış kelimenin anlamını en iyi veren seçeneği işaretle.</p>
+
+<ol>
+<li><b>ahenk</b><br>A) uyum &nbsp; B) gürültü &nbsp; C) hız &nbsp; D) karanlık</li>
+<li><b>idrak</b><br>A) anlama, kavrama &nbsp; B) unutma &nbsp; C) saklama &nbsp; D) bekleme</li>
+<li><b>kanaat</b><br>A) görüş, inanış &nbsp; B) öfke &nbsp; C) yolculuk &nbsp; D) borç</li>
+<li><b>riayet</b><br>A) uyma, saygı gösterme &nbsp; B) karşı çıkma &nbsp; C) erteleme &nbsp; D) ödünç verme</li>
+<li><b>mahcup</b><br>A) utangaç &nbsp; B) cesur &nbsp; C) tembel &nbsp; D) cömert</li>
+<li><b>mağrur</b><br>A) kibirli &nbsp; B) alçakgönüllü &nbsp; C) hasta &nbsp; D) yorgun</li>
+<li><b>berrak</b><br>A) duru, temiz &nbsp; B) bulanık &nbsp; C) sert &nbsp; D) sıcak</li>
+<li><b>müptela</b><br>A) bir şeye aşırı bağımlı &nbsp; B) uzman &nbsp; C) yabancı &nbsp; D) acemi</li>
+<li><b>hantal</b><br>A) ağır, hareketi güç &nbsp; B) hızlı &nbsp; C) ince &nbsp; D) küçük</li>
+<li><b>ihtiyat</b><br>A) önlem, tedbirli davranma &nbsp; B) acele &nbsp; C) şaka &nbsp; D) gösteriş</li>
+</ol>
+
+<h2>Bölüm 4 — Harf İpucundan Kelime Bulma (4 madde, 6 dakika)</h2>
+<p><b>Yönerge:</b> İlk harfi ve harf sayısı verilen kelimeyi, yanındaki anlamdan yararlanarak yaz.</p>
+
+<ol>
+<li>Ç _ _ _ _ &nbsp;(5 harf) → hızlı ve kıvrak hareket eden &nbsp;&nbsp; Cevap: ........................</li>
+<li>C _ _ _ _ _ &nbsp;(6 harf) → eli açık, paylaşmayı seven &nbsp;&nbsp; Cevap: ........................</li>
+<li>M _ _ _ _ &nbsp;(5 harf) → işinin ehli, becerikli &nbsp;&nbsp; Cevap: ........................</li>
+<li>T _ _ _ _ &nbsp;(5 harf) → ince ayrıntılara çok dikkat eden &nbsp;&nbsp; Cevap: ........................</li>
+</ol>
+
+<p class="kucuk">A Formu sonu. Teşekkürler.</p>
+
+
+<h1>3. B FORMU (SON TEST)</h1>
+
+<div class="kutu">
+<p><b>Öğrenci kodu:</b> ............................ &nbsp;&nbsp; <b>Sınıf / Şube:</b> ..................... &nbsp;&nbsp; <b>Tarih:</b> ...... / ...... / 20......</p>
+<p class="kucuk">Ön testte kullandığın öğrenci kodunun aynısını yaz. Adını yazma. Bu test notunu etkilemez.</p>
+</div>
+
+<h2>Bölüm 1 — Kelime Üretme Akıcılığı (3 dakika)</h2>
+<p><b>Yönerge:</b> Aşağıya <b>T</b> harfi ile başlayan, Türkçede gerçekten var olan kelimeleri yaz. Süre 3 dakikadır. Özel isim (Trabzon, Tuğçe gibi) yazma. Aynı kelimenin ekli hâllerini ayrı ayrı yazma (taş, taşı, taşlar → yalnızca biri sayılır). Aklına geldiği sırayla, durmadan yaz.</p>
+<p>1. .................... &nbsp; 2. .................... &nbsp; 3. .................... &nbsp; 4. .................... &nbsp; 5. ....................</p>
+<p>6. .................... &nbsp; 7. .................... &nbsp; 8. .................... &nbsp; 9. .................... &nbsp; 10. ....................</p>
+<p>11. .................... &nbsp; 12. .................... &nbsp; 13. .................... &nbsp; 14. .................... &nbsp; 15. ....................</p>
+<p>16. .................... &nbsp; 17. .................... &nbsp; 18. .................... &nbsp; 19. .................... &nbsp; 20. ....................</p>
+<p>21. .................... &nbsp; 22. .................... &nbsp; 23. .................... &nbsp; 24. .................... &nbsp; 25. ....................</p>
+<p class="kucuk">(Süre bitince kalemi bırak ve bir sonraki sayfaya geç. Bu sayfaya geri dönme.)</p>
+
+<h2>Bölüm 2 — Yazım Bilgisi (12 madde, 8 dakika)</h2>
+<p><b>Yönerge:</b> Her cümlede boş bırakılan yere gelecek sözün <b>doğru yazılmış</b> biçimini işaretle.</p>
+
+<ol>
+<li>Çantamda ............ var.<br>
+A) herşey &nbsp; B) her şey &nbsp; C) herşiy &nbsp; D) he şey</li>
+
+<li>Babam her sabah ............ olur.<br>
+A) traş &nbsp; B) tıraş &nbsp; C) tiraş &nbsp; D) tırraş</li>
+
+<li>Yardımın için ............ .<br>
+A) sağol &nbsp; B) sağ ol &nbsp; C) sağ-ol &nbsp; D) sagol</li>
+
+<li>Törene şık bir ............ ile geldi.<br>
+A) kiyafet &nbsp; B) kıyafet &nbsp; C) kıyaffet &nbsp; D) kiyaffet</li>
+
+<li>Yol gösteren kişiye ............ denir.<br>
+A) klavuz &nbsp; B) kılavuz &nbsp; C) kılavız &nbsp; D) klavız</li>
+
+<li>Yazarken on parmakla ............ kullanıyorum.<br>
+A) klavya &nbsp; B) klavye &nbsp; C) kılavye &nbsp; D) klavey</li>
+
+<li>Geç kaldım, ............ otobüsü kaçırdım.<br>
+A) çünki &nbsp; B) çünkü &nbsp; C) çünkii &nbsp; D) çunkü</li>
+
+<li>............ bizimle geliyor.<br>
+A) Oda &nbsp; B) O da &nbsp; C) O'da &nbsp; D) Odaa</li>
+
+<li>Beni ............ ?<br>
+A) anladınmı &nbsp; B) anladın mı &nbsp; C) anladınmi &nbsp; D) anladın-mı</li>
+
+<li>Hafta sonu bütün sınıf ............ gitti.<br>
+A) tiatroya &nbsp; B) tiyatroya &nbsp; C) tiyatruya &nbsp; D) tiatroyo</li>
+
+<li>Herkesin önünde konuşurken çok ............ oldu.<br>
+A) mahçup &nbsp; B) mahcup &nbsp; C) mahcüp &nbsp; D) mahçüp</li>
+
+<li>Sınav sırasında oldukça ............ davrandı.<br>
+A) sebest &nbsp; B) serbest &nbsp; C) serbes &nbsp; D) serbesst</li>
+</ol>
+
+<h2>Bölüm 3 — Kelime Anlamı (10 madde, 8 dakika)</h2>
+<p><b>Yönerge:</b> Koyu yazılmış kelimenin anlamını en iyi veren seçeneği işaretle.</p>
+
+<ol>
+<li><b>zarafet</b><br>A) incelik, kibarlık &nbsp; B) kabalık &nbsp; C) hız &nbsp; D) karanlık</li>
+<li><b>marifet</b><br>A) ustalık, el becerisi &nbsp; B) tembellik &nbsp; C) korku &nbsp; D) borç</li>
+<li><b>nezaket</b><br>A) görgülü ve saygılı davranış &nbsp; B) sertlik &nbsp; C) yavaşlık &nbsp; D) cimrilik</li>
+<li><b>sadakat</b><br>A) bağlılık &nbsp; B) ihanet &nbsp; C) acelecilik &nbsp; D) dağınıklık</li>
+<li><b>mahrum</b><br>A) bir şeyden yoksun bırakılmış &nbsp; B) zengin &nbsp; C) ünlü &nbsp; D) güçlü</li>
+<li><b>atıl</b><br>A) işlemeyen, kullanılmayan &nbsp; B) çalışkan &nbsp; C) parlak &nbsp; D) genç</li>
+<li><b>fani</b><br>A) geçici, ölümlü &nbsp; B) sonsuz &nbsp; C) sağlam &nbsp; D) gizli</li>
+<li><b>hüner</b><br>A) beceri &nbsp; B) yanılgı &nbsp; C) gecikme &nbsp; D) alışkanlık</li>
+<li><b>tedbir</b><br>A) önlem &nbsp; B) ceza &nbsp; C) ödül &nbsp; D) tesadüf</li>
+<li><b>yoksun</b><br>A) bir şeye sahip olmayan &nbsp; B) doymuş &nbsp; C) mutlu &nbsp; D) kalabalık</li>
+</ol>
+
+<h2>Bölüm 4 — Harf İpucundan Kelime Bulma (4 madde, 6 dakika)</h2>
+<p><b>Yönerge:</b> İlk harfi ve harf sayısı verilen kelimeyi, yanındaki anlamdan yararlanarak yaz.</p>
+
+<ol>
+<li>U _ _ _ _ &nbsp;(5 harf) → söz dinleyen, yumuşak başlı &nbsp;&nbsp; Cevap: ........................</li>
+<li>D _ _ _ _ _ &nbsp;(6 harf) → doğru sözlü, güvenilir &nbsp;&nbsp; Cevap: ........................</li>
+<li>N _ _ _ _ &nbsp;(5 harf) → ince yapılı, kolay zarar görebilen &nbsp;&nbsp; Cevap: ........................</li>
+<li>M _ _ _ _ _ _ &nbsp;(7 harf) → öğrenmeye düşkün, her şeyi sormak isteyen &nbsp;&nbsp; Cevap: ........................</li>
+</ol>
+
+<p class="kucuk">B Formu sonu. Teşekkürler.</p>
+
+
+<h1>4. CEVAP ANAHTARI</h1>
+
+<h3>Bölüm 2 — Yazım Bilgisi</h3>
+<table>
+<tr><th style="width:8%">Madde</th><th style="width:20%">A Formu</th><th style="width:22%">Doğru yazım</th><th style="width:20%">B Formu</th><th>Doğru yazım</th></tr>
+<tr><td>1</td><td>B</td><td>bir şey</td><td>B</td><td>her şey</td></tr>
+<tr><td>2</td><td>B</td><td>yalnız</td><td>B</td><td>tıraş</td></tr>
+<tr><td>3</td><td>B</td><td>herkes</td><td>B</td><td>sağ ol</td></tr>
+<tr><td>4</td><td>B</td><td>sürpriz</td><td>B</td><td>kıyafet</td></tr>
+<tr><td>5</td><td>B</td><td>yanlış</td><td>B</td><td>kılavuz</td></tr>
+<tr><td>6</td><td>B</td><td>şarj</td><td>B</td><td>klavye</td></tr>
+<tr><td>7</td><td>B</td><td>yoğurt</td><td>B</td><td>çünkü</td></tr>
+<tr><td>8</td><td>B</td><td>Sen de (ayrı)</td><td>B</td><td>O da (ayrı)</td></tr>
+<tr><td>9</td><td>B</td><td>yaptın mı (ayrı)</td><td>B</td><td>anladın mı (ayrı)</td></tr>
+<tr><td>10</td><td>B</td><td>poğaça</td><td>B</td><td>tiyatroya</td></tr>
+<tr><td>11</td><td>B</td><td>eşofman</td><td>B</td><td>mahcup</td></tr>
+<tr><td>12</td><td>B</td><td>kibrit</td><td>B</td><td>serbest</td></tr>
+</table>
+<p class="kucuk">Dikkat: taslakta doğru cevap her maddede B seçeneğindedir. <b>Çoğaltmadan önce her maddenin seçenekleri karıştırılmalı</b>, doğru cevaplar A–D arasına dengeli dağıtılmalıdır. Karıştırma sonrası anahtar yeniden yazılacaktır.</p>
+
+<h3>Bölüm 3 — Kelime Anlamı</h3>
+<table>
+<tr><th style="width:8%">Madde</th><th style="width:20%">A Formu kelime</th><th style="width:14%">Doğru</th><th style="width:20%">B Formu kelime</th><th>Doğru</th></tr>
+<tr><td>1</td><td>ahenk</td><td>A</td><td>zarafet</td><td>A</td></tr>
+<tr><td>2</td><td>idrak</td><td>A</td><td>marifet</td><td>A</td></tr>
+<tr><td>3</td><td>kanaat</td><td>A</td><td>nezaket</td><td>A</td></tr>
+<tr><td>4</td><td>riayet</td><td>A</td><td>sadakat</td><td>A</td></tr>
+<tr><td>5</td><td>mahcup</td><td>A</td><td>mahrum</td><td>A</td></tr>
+<tr><td>6</td><td>mağrur</td><td>A</td><td>atıl</td><td>A</td></tr>
+<tr><td>7</td><td>berrak</td><td>A</td><td>fani</td><td>A</td></tr>
+<tr><td>8</td><td>müptela</td><td>A</td><td>hüner</td><td>A</td></tr>
+<tr><td>9</td><td>hantal</td><td>A</td><td>tedbir</td><td>A</td></tr>
+<tr><td>10</td><td>ihtiyat</td><td>A</td><td>yoksun</td><td>A</td></tr>
+</table>
+<p class="kucuk">Aynı uyarı burada da geçerlidir: seçenekler çoğaltma öncesi karıştırılmalıdır.</p>
+
+<h3>Bölüm 4 — Harf İpucundan Kelime Bulma</h3>
+<table>
+<tr><th style="width:8%">Madde</th><th style="width:46%">A Formu</th><th>B Formu</th></tr>
+<tr><td>1</td><td>ÇEVİK</td><td>UYSAL</td></tr>
+<tr><td>2</td><td>CÖMERT</td><td>DÜRÜST</td></tr>
+<tr><td>3</td><td>MAHİR</td><td>NARİN</td></tr>
+<tr><td>4</td><td>TİTİZ</td><td>MERAKLI</td></tr>
+</table>
+<p class="kucuk">Tüm cevaplar oyunun 6.915 kelimelik cevap havuzunda yer alır. Anlamca uygun ve harf/uzunluk koşulunu sağlayan başka bir kelime yazılırsa, puanlayıcı onu da doğru sayar ve kâğıda not düşer (bkz. puanlama yönergesi).</p>
+
+
+<h1>5. PUANLAMA YÖNERGESİ</h1>
+
+<h3>Bölüm 2 ve Bölüm 3 (çoktan seçmeli)</h3>
+<ul>
+<li>Her doğru cevap <b>1 puan</b>, yanlış veya boş <b>0 puan</b>. Yanlış cevap doğruyu götürmez.</li>
+<li>Birden fazla seçenek işaretlenmişse madde 0 puandır.</li>
+<li>Bölüm 2 toplamı 0–12, Bölüm 3 toplamı 0–10.</li>
+</ul>
+
+<h3>Bölüm 4 (harf ipucu)</h3>
+<ul>
+<li>Doğru kelime, doğru yazımla → <b>2 puan</b>.</li>
+<li>Doğru kelime, yazım hatasıyla (ör. "cömert" yerine "cömerd") → <b>1 puan</b>.</li>
+<li>Anahtardaki kelimeden farklı ama anlamı tutan, ilk harfi ve harf sayısı doğru bir kelime → <b>2 puan</b>; kelime kâğıda not edilir ve tüm kâğıtlar için aynı şekilde kabul edilir.</li>
+<li>Boş, ilgisiz ya da harf/uzunluk koşuluna uymayan cevap → <b>0 puan</b>.</li>
+<li>Bölüm toplamı 0–8.</li>
+</ul>
+
+<h3>KYBT toplam puanı</h3>
+<p><b>KYBT = Bölüm 2 + Bölüm 3 + Bölüm 4 → 0–30 puan.</b> Analizlerde bağımlı değişken bu toplam puandır. Bölüm puanları ayrıca alt boyut olarak raporlanır.</p>
+
+<h3>Bölüm 1 (akıcılık) — ayrı değerlendirilir</h3>
+<p>Akıcılık puanı KYBT toplamına <b>eklenmez</b>; ikinci bağımlı değişken olarak ayrı analiz edilir.</p>
+<ul>
+<li><b>Sayılır:</b> İstenen harfle başlayan, Türkçede var olan, oyunun sözlüğünde bulunan her farklı kelime → 1 puan.</li>
+<li><b>Sayılmaz:</b> Özel isim; aynı kökün ekli biçimleri (yalnızca ilki sayılır); tekrar yazılan kelime; okunamayan yazı; istenen harfle başlamayan kelime.</li>
+<li><b>Karar mercii:</b> Tartışmalı bir kelimede ölçüt, oyunun <code>sozluk/</code> klasöründeki kelime listesidir. Listede varsa sayılır, yoksa sayılmaz. Bu kural, puanlamayı puanlayıcının kişisel kelime bilgisinden bağımsız kılar ve tekrar edilebilir yapar.</li>
+<li><b>Puan:</b> Kabul edilen farklı kelime sayısı (üst sınır yok; kâğıtta 25 satır vardır, dolduran öğrenciye arkaya devam etmesi söylenir).</li>
+</ul>
+
+<h3>Puanlayıcı güvenirliği</h3>
+<p>Bölüm 1 ve Bölüm 4 açık uçlu olduğu için iki bağımsız puanlayıcı (araştırmacı öğrenci ve danışman öğretmen) kâğıtların <b>en az %25'ini</b> ayrı ayrı puanlar. Puanlayıcılar arası uyum <b>Cohen kappa</b> veya <b>sınıf içi korelasyon (ICC)</b> ile hesaplanıp raporda verilir. Hedef: ICC ≥ .80. Uyuşmayan maddeler tartışılarak karara bağlanır ve kural metne eklenir.</p>
+
+
+<h1>6. UYGULAMA YÖNERGESİ</h1>
+
+<h3>Uygulayıcı için zaman çizelgesi</h3>
+<table>
+<tr><th style="width:12%">Süre</th><th style="width:30%">Adım</th><th>Uygulayıcının yapacağı</th></tr>
+<tr><td>3 dk</td><td>Karşılama ve açıklama</td><td>Araştırmanın amacını bir cümleyle söyler, katılımın gönüllü olduğunu ve testin not olmadığını belirtir, öğrenci kodlarını dağıtır</td></tr>
+<tr><td>2 dk</td><td>Kitapçıkların dağıtımı</td><td>Kitapçıkları kapalı dağıtır, "başla" demeden açılmamasını söyler</td></tr>
+<tr><td>3 dk</td><td>Bölüm 1 — akıcılık</td><td>Yönergeyi yüksek sesle okur, kronometreyi başlatır, 3 dakika dolunca "durun, sayfayı çevirin" der</td></tr>
+<tr><td>8 dk</td><td>Bölüm 2 — yazım</td><td>Süreyi izler, son 1 dakikayı duyurur</td></tr>
+<tr><td>8 dk</td><td>Bölüm 3 — kelime anlamı</td><td>Süreyi izler, son 1 dakikayı duyurur</td></tr>
+<tr><td>6 dk</td><td>Bölüm 4 — harf ipucu</td><td>Süreyi izler, bitişte kâğıtları toplar</td></tr>
+<tr><td>30 dk</td><td>Toplam</td><td>Tek ders saatinde tamamlanır</td></tr>
+</table>
+
+<h3>Standart koşullar</h3>
+<ul>
+<li>Ön test ve son test <b>aynı uygulayıcı</b> tarafından, günün <b>aynı saat diliminde</b> ve aynı sınıf ortamında yapılır.</li>
+<li>Ön test müdahaleden en çok 1 hafta önce, son test müdahale bittikten sonraki ilk 3 gün içinde uygulanır.</li>
+<li>Sözlük, telefon, defter kullanılmaz. Öğrenciler birbirine soru sormaz.</li>
+<li>Uygulayıcı hiçbir maddenin cevabını, ipucunu ya da anlamını söylemez. Yalnızca yönergeyi tekrar okur.</li>
+<li>Deney ve kontrol grubuna <b>aynı</b> yönerge okunur; hangi grubun hangisi olduğu öğrencilere söylenmez.</li>
+<li>Devamsızlık nedeniyle iki ölçümden birini kaçıran öğrencinin verisi analize alınmaz; bu sayı raporda belirtilir.</li>
+</ul>
+
+<h3>Etik</h3>
+<ul>
+<li>Uygulama, <b>MEB Araştırma Uygulama İzni</b> ve <b>veli bilgilendirilmiş onamı</b> alınmadan başlamaz.</li>
+<li>Kâğıtlarda ad soyad yer almaz; eşleştirme öğrenci koduyla yapılır. Kod–öğrenci eşleşme listesi danışman öğretmende, kilitli ortamda tutulur ve araştırma bitince imha edilir.</li>
+<li>Katılmak istemeyen öğrenci o ders saatinde eşdeğer bir kelime etkinliği yapar; hiçbir öğrenci etkinlikten mahrum bırakılmaz.</li>
+<li>Veriler yalnızca toplu (grup ortalaması) olarak raporlanır; tek bir öğrencinin puanı hiçbir yerde paylaşılmaz.</li>
+</ul>
+
+
+<h1>7. GEÇERLİK VE GÜVENİRLİK ÇALIŞMASI</h1>
+
+<p>Bu araçlar araştırmacı tarafından geliştirildiği için, veri toplamadan önce aşağıdaki adımlar tamamlanmalı ve sonuçları rapora yazılmalıdır. TÜBİTAK değerlendirmesinde "kendi geliştirdiğiniz ölçme aracının geçerlik ve güvenirliği nedir?" sorusu mutlaka gelir.</p>
+
+<h3>Kapsam geçerliği</h3>
+<ul>
+<li>Taslak, <b>en az üç Türkçe/Türk dili ve edebiyatı öğretmenine</b> uzman görüşü için verilir. Her madde için "uygun / düzeltilmeli / çıkarılmalı" işaretlenir ve görüş yazılır.</li>
+<li>Uzman uyumu <b>Lawshe tekniği</b> ile kapsam geçerlik oranı (KGO) olarak hesaplanır; üç uzman için KGO alt sınırı .99 kabul edilir, sağlamayan madde düzeltilir veya atılır.</li>
+<li>Maddelerin müdahale içeriğiyle örtüşmesi ayrıca <b>belirtke tablosu</b> ile gösterilir: her madde, oyunun hangi veri dosyasından (sözlüğün reddettiği yanlış yazım / cevap havuzu kelimesi) türetildiği belirtilerek listelenir.</li>
+</ul>
+
+<h3>Pilot uygulama</h3>
+<ul>
+<li>Araştırmaya katılmayacak, benzer düzeyde <b>30–40 öğrenciyle</b> pilot yapılır.</li>
+<li>Pilotta hem A hem B Formu uygulanır (yarısına A sonra B, yarısına B sonra A — <b>karşıt dengeleme</b>).</li>
+<li>Hesaplanacaklar:
+<ul>
+<li><b>Madde güçlük indeksi (p)</b> — .20–.80 aralığı dışındaki maddeler gözden geçirilir.</li>
+<li><b>Madde ayırt edicilik indeksi (r)</b> — r &lt; .20 olan madde atılır.</li>
+<li><b>KR-20</b> (çoktan seçmeli bölümler için) veya <b>Cronbach alfa</b> — hedef ≥ .70.</li>
+<li><b>Paralel form eşdeğerliği:</b> A ve B Formu toplam puanları arasındaki korelasyon (hedef ≥ .70) ve iki formun ortalamalarının eşlenmiş t testiyle karşılaştırılması (hedef: anlamlı fark <b>çıkmaması</b>). Fark çıkarsa, maddeler eşitlenene kadar düzeltilir ya da son analizde form etkisi kontrol edilir.</li>
+<li><b>Süre yeterliği:</b> Pilotta öğrencilerin en az %90'ı verilen sürede bitirebiliyorsa süreler korunur; aksi hâlde Bölüm 2 ve 3'e 2 dakika eklenir.</li>
+</ul>
+</li>
+<li>Akıcılık görevi için pilotta ayrıca <b>tavan etkisi</b> kontrol edilir: 25 satırı dolduran öğrenci oranı %10'u aşıyorsa satır sayısı artırılır.</li>
+</ul>
+
+<h3>Son hâlin dosyalanması</h3>
+<p>Pilot sonrası düzeltilmiş kitapçıklar, cevap anahtarı ve uygulama yönergesi MEB izin başvurusuna <b>ek</b> olarak konur. İzin alındıktan sonra araçlarda değişiklik yapılmaz.</p>
+
+
+<h1>8. YAPILACAKLAR LİSTESİ</h1>
+
+<table>
+<tr><th style="width:6%">#</th><th style="width:48%">İş</th><th>Çıktı</th></tr>
+<tr><td>1</td><td>Seçenekleri karıştır, doğru cevapları A–D arasına dengeli dağıt</td><td>Çoğaltmaya hazır kitapçık ve güncel anahtar</td></tr>
+<tr><td>2</td><td>Belirtke tablosunu hazırla (her madde hangi veri dosyasından geldi)</td><td>Kapsam geçerliği eki</td></tr>
+<tr><td>3</td><td>Üç Türkçe öğretmeninden uzman görüşü al, KGO hesapla</td><td>Uzman görüş formları + KGO tablosu</td></tr>
+<tr><td>4</td><td>30–40 öğrenciyle karşıt dengelemeli pilot uygula</td><td>Pilot veri seti</td></tr>
+<tr><td>5</td><td>Madde analizi, KR-20, paralel form korelasyonu</td><td>Güvenirlik raporu</td></tr>
+<tr><td>6</td><td>Veli bilgilendirilmiş onam formu ve öğrenci onam metnini yaz</td><td>Onam formları</td></tr>
+<tr><td>7</td><td>MEB Araştırma Uygulama İzni başvurusunu araç ekleriyle yap</td><td>İzin yazısı (15–30 gün)</td></tr>
+<tr><td>8</td><td>İzin geldikten sonra ön testi uygula</td><td>Ön test verisi</td></tr>
+</table>
+
+<p class="kucuk">Bu belge bir taslaktır. 1–5. adımlar tamamlanmadan ana uygulamaya geçilmemelidir.</p>
+
+</body>
+</html>
