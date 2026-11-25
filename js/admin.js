@@ -172,6 +172,7 @@
     $('btn-logout').classList.toggle('hidden', !canEdit);
     $('btn-add').disabled = !canEdit;
     $('cfg-bonus').disabled = !canEdit;
+    $('cfg-dict').disabled = !canEdit;
     $('add-hint').textContent = canEdit ? '' : (mode === 'github' ? 'Buradan eklemek için token ile bağlanmak gerekir; kolay yol: dosyayı GitHub\'da düzenleyin.' : 'Eklemek için giriş yap.');
     $('easy-edit').classList.toggle('hidden', mode !== 'github');
     $('pages-note').classList.toggle('hidden', mode !== 'github');
@@ -205,18 +206,25 @@
 
   function renderList() {
     var q = L.toLowerTr($('search').value.trim());
-    var list = (store[currentLen] || []).filter(function (w) { return !q || w.indexOf(q) !== -1; });
+    var all = (store[currentLen] || []).filter(function (w) { return !q || w.indexOf(q) !== -1; });
+    var LIMIT = 600;
+    var list = all.slice(0, LIMIT);
+    var more = all.length - list.length;
     $('word-list').innerHTML = list.length
       ? list.map(function (w) {
           return '<span class="chip">' + esc(w) + (canEdit ? '<button title="Sil" data-word="' + esc(w) + '">×</button>' : '') + '</span>';
         }).join('')
       : '<span class="status">Kelime yok.</span>';
+    if (more > 0) $('word-list').insertAdjacentHTML('beforeend', '<span class="status">… ve ' + more + ' kelime daha. Aramayı kullanın.</span>');
     Array.prototype.forEach.call($('word-list').querySelectorAll('button[data-word]'), function (b) {
       b.addEventListener('click', function () { removeWord(b.dataset.word); });
     });
   }
 
-  function renderSettings() { $('cfg-bonus').checked = !!settings.bonusLetter; }
+  function renderSettings() {
+    $('cfg-bonus').checked = !!settings.bonusLetter;
+    $('cfg-dict').checked = settings.dictionary !== false;
+  }
 
   function reload() {
     return backend.load().then(function (r) {
@@ -289,19 +297,26 @@
     }).catch(function (e) { $('add-report').innerHTML = '<div class="bad">' + esc(e.message) + '</div>'; }).then(function () { busy(false); });
   });
 
-  $('cfg-bonus').addEventListener('change', function (e) {
-    var value = e.target.checked;
-    busy(true);
-    backend.saveSettings({ bonusLetter: value }).then(function (cfg) {
-      settings = Object.assign({}, settings, L.sanitizeSettings(cfg));
-      renderSettings();
-      $('cfg-status').innerHTML = 'Kaydedildi: bonus harf <b>' + (settings.bonusLetter ? 'açık' : 'kapalı') + '</b>.' +
-        (mode === 'github' ? ' Commit atıldı; GitHub Pages 1–2 dakika içinde güncellenir.' : '');
-    }).catch(function (err) {
-      e.target.checked = !value;
-      $('cfg-status').innerHTML = '<b class="off">' + esc(err.message) + '</b>';
-    }).then(function () { busy(false); });
-  });
+  /** Bir ayar düğmesini sunucuya ya da GitHub'a kaydeder. */
+  function bindSettingToggle(id, key, label) {
+    $(id).addEventListener('change', function (e) {
+      var value = e.target.checked;
+      var patch = {};
+      patch[key] = value;
+      busy(true);
+      backend.saveSettings(patch).then(function (cfg) {
+        settings = Object.assign({}, settings, L.sanitizeSettings(cfg));
+        renderSettings();
+        $('cfg-status').innerHTML = 'Kaydedildi: ' + label + ' <b>' + (settings[key] ? 'açık' : 'kapalı') + '</b>.' +
+          (mode === 'github' ? ' Commit atıldı; GitHub Pages 1–2 dakika içinde güncellenir.' : '');
+      }).catch(function (err) {
+        e.target.checked = !value;
+        $('cfg-status').innerHTML = '<b class="off">' + esc(err.message) + '</b>';
+      }).then(function () { busy(false); });
+    });
+  }
+  bindSettingToggle('cfg-dict', 'dictionary', 'sözlük kontrolü');
+  bindSettingToggle('cfg-bonus', 'bonusLetter', 'bonus harf');
 
   $('search').addEventListener('input', renderList);
   $('btn-export').addEventListener('click', function () {

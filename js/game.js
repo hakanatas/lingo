@@ -6,7 +6,10 @@
   var WORDS = window.LINGO_WORDS;   // Sunucu varsa api/words ile değiştirilir.
   var serverAvailable = false;
   // Sunucu tarafında (admin.html) ayarlanan oyun kuralları. Sunucu yoksa varsayılanlar geçerlidir.
-  var serverConfig = { bonusLetter: false };
+  var serverConfig = { dictionary: true, bonusLetter: false };
+  // Uzunluğa göre yüklenen Türkçe sözlük: { 5: Set(...) }. Yüklenene kadar tahminler denetlenmez.
+  var dictionaries = {};
+  var dictionaryLoading = {};
   var $ = function (id) { return document.getElementById(id); };
 
   var MAX_ATTEMPTS = 5;
@@ -159,6 +162,7 @@
 
     $('screen-start').classList.add('hidden');
     $('screen-game').classList.remove('hidden');
+    loadDictionary(length);
 
     if (mode === 'daily' && serverAvailable) {
       // Herkes aynı kelimeyi alsın diye günün kelimesini sunucu belirler.
@@ -214,6 +218,7 @@
     state.wordIndex += 1;
     if (state.wordIndex >= state.totalWords) { endGame(); return; }
 
+    loadDictionary(state.length);
     state.target = L.toUpperTr(chooseWord());
     state.rows = [];          // { letters:[], eval:[], status:'ok'|'timeout'|'invalid' }
     state.attempt = 0;
@@ -335,10 +340,10 @@
       return;
     }
     var guess = letters.join('');
-    // Sözlük kontrolü yapılmaz: ilk harf ve uzunluk uyan her tahmin kabul edilir.
-    var check = L.validateGuess(guess, state.target, null, { checkDictionary: false });
+    var check = L.validateGuess(guess, state.target, currentDictionary(), { checkDictionary: dictionaryActive() });
     if (!check.ok) {
-      toast('Geçersiz tahmin');
+      // Sözlükte olmayan kelime hak yakmaz: oyuncu yeniden dener.
+      toast(check.reason === 'dictionary' ? 'Sözlükte yok: ' + guess : 'Geçersiz tahmin');
       shakeRow();
       return;
     }
@@ -866,7 +871,7 @@
   function showHelp() {
     showModal(
       '<h2>Nasıl oynanır?</h2>' +
-      '<p>Aranan kelimenin <b>ilk harfi</b> verilir. Aynı uzunlukta, aynı harfle başlayan bir kelime yazıp ENTER\'a bas. Sözlük kontrolü yoktur; toplam <b>5 tahmin</b> hakkın var. İlk harf hazır yazılıdır; istersen sen de yazabilirsin, oyun onu ilk kutuya sayar.</p>' +
+      '<p>Aranan kelimenin <b>ilk harfi</b> verilir. Aynı uzunlukta, aynı harfle başlayan bir kelime yazıp ENTER\'a bas. Tahminin Türkçe sözlükte bulunmalı; sözlükte olmayan kelime hak yakmaz, yeniden denersin. Toplam <b>5 tahmin</b> hakkın var. İlk harf hazır yazılıdır; istersen sen de yazabilirsin, oyun onu ilk kutuya sayar.</p>' +
       '<div class="legend">' +
       '<div class="legend-row"><div class="cell correct">K</div><span>Harf doğru ve <b>doğru yerde</b> (kırmızı kare). Sonraki satıra taşınır.</span></div>' +
       '<div class="legend-row"><div class="cell present">A</div><span>Harf kelimede var ama <b>yanlış yerde</b> (sarı daire).</span></div>' +
@@ -1071,6 +1076,7 @@
     };
     $('screen-tour').classList.add('hidden');
     $('screen-game').classList.remove('hidden');
+    c.lengths.forEach(loadDictionary);
     tourSave();
     tourNextTurn();
   }
@@ -1134,6 +1140,7 @@
   function tourShowReady(teamIndex, length, match) {
     state.current = teamIndex;
     state.length = length;
+    loadDictionary(length);
     state.phase = 'ready';
     state.tour.turn = { team: teamIndex, length: length, match: match ? state.tour.matches.indexOf(match) : -1 };
     state.rows = []; state.attempt = 0; state.input = []; state.firstTyped = false; state.keyStates = {}; state.known = null;
@@ -1419,6 +1426,38 @@
   loadServerWords();
   loadServerConfig();
 
+  /** O anki kelime uzunluğu için yüklü sözlük (yoksa null). */
+  function currentDictionary() {
+    return (state && dictionaries[state.length]) || null;
+  }
+
+  /** Sözlük denetimi açık mı? Ayar kapalıysa ya da sözlük henüz yüklenmediyse hayır. */
+  function dictionaryActive() {
+    return serverConfig.dictionary !== false && !!currentDictionary();
+  }
+
+  /**
+   * sozluk/<uzunluk>.txt dosyasını arka planda yükler ve belleğe alır.
+   * Dosya yoksa (yerel dosya kullanımı, eski sürüm) sözlük denetimi kendiliğinden kapalı kalır.
+   */
+  function loadDictionary(length) {
+    if (!length || dictionaries[length] || dictionaryLoading[length]) return;
+    if (location.protocol === 'file:' || typeof fetch !== 'function') return;
+    dictionaryLoading[length] = true;
+    fetch('sozluk/' + length + '.txt', { cache: 'force-cache' })
+      .then(function (r) { return r.ok ? r.text() : null; })
+      .then(function (text) {
+        if (text) {
+          var set = L.parseDictionaryText(text);
+          // Havuzdaki cevaplar her zaman geçerli tahmindir.
+          (WORDS[length] || []).forEach(function (w) { set.add(w); });
+          if (set.size) dictionaries[length] = set;
+        }
+      })
+      .catch(function () { /* sözlük yoksa denetim yapılmaz */ })
+      .then(function () { dictionaryLoading[length] = false; });
+  }
+
   /** Kuralları önce sunucudan (api/settings), yoksa depodaki ayarlar.txt dosyasından okur. */
   function loadServerConfig() {
     if (location.protocol === 'file:' || typeof fetch !== 'function') return;
@@ -1476,7 +1515,9 @@
     window.__lingoDebug = {
       getState: function () { return state; },
       getSettings: function () { return settings; },
-      getServerConfig: function () { return serverConfig; }
+      getServerConfig: function () { return serverConfig; },
+      getDictionary: function () { return currentDictionary(); },
+      dictionaryActive: dictionaryActive
     };
   }
 })();

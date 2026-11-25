@@ -13,7 +13,7 @@ TRT 1'de yayınlanan **Lingo Türkiye** yarışmasının (ve Hollanda orijinalin
 
 Oyun ilk açılışta adım adım, canlı örneklerle bir tanıtım gösterir (ilk harf, renkler, taşınan harfler, süre, Lingo kartı, modlar). Tanıtımı ana menüdeki "Nasıl oynanır? Tanıtımı izle" düğmesiyle ya da Kurallar penceresinden istediğiniz zaman yeniden açabilirsiniz.
 
-1. Kelimenin **ilk harfi** verilir. Aynı uzunlukta, aynı harfle başlayan bir kelime yazıp ENTER'a bas. İlk harf hazır yazılıdır; kelimeyi ilk harfiyle birlikte de yazabilirsin, oyun onu ilk kutuya sayar. Sözlük kontrolü yapılmaz; her harf dizisi tahmin olarak kabul edilir.
+1. Kelimenin **ilk harfi** verilir. Aynı uzunlukta, aynı harfle başlayan bir kelime yazıp ENTER'a bas. İlk harf hazır yazılıdır; kelimeyi ilk harfiyle birlikte de yazabilirsin, oyun onu ilk kutuya sayar. Tahminin **Türkçe sözlükte** bulunmalı: 105.000 kelimelik liste çekimli biçimleri de kapsar (`evler`, `geldi`, `kitabı`). Sözlükte olmayan kelime **hak yakmaz**, yeniden denersin.
 2. Her tahminden sonra harfler işaretlenir:
    - 🟥 **Kırmızı kare**: harf doğru ve doğru yerde. Bir sonraki satıra ipucu olarak taşınır.
    - 🟡 **Sarı daire**: harf kelimede var ama yanlış yerde.
@@ -51,6 +51,8 @@ Sınıfı takımlara bölüp yansıdan yönetmek için tasarlandı.
 | Tahmin süresi (0–60 sn) | Ana menü | 0 = süresiz |
 | Kelime sayısı (3/5/10) | Ana menü | Bir oyundaki kelime sayısı |
 | Renk teması | ⚙ Ayarlar | TV (kırmızı kare / sarı daire) veya Wordle (yeşil / sarı) |
+| Sözlük kontrolü | Yönetim paneli ya da `ayarlar.txt` | Tahminler Türkçe sözlükte aransın mı. Varsayılan açık |
+| Bonus harf | Yönetim paneli ya da `ayarlar.txt` | İki takım modunda sıra geçince rakibe bir harf açılır. Varsayılan kapalı |
 
 İstatistikler (oyun, kelime, başarı yüzdesi, deneme dağılımı, LINGO sayısı, günlük seri) tarayıcının `localStorage` alanında tutulur.
 
@@ -64,7 +66,7 @@ Sunucu, şifre ya da token gerekmez. Kelimeler depodaki `kelimeler.txt` (her sat
 
 1. Depoda **Settings → Pages → Build and deployment → Source: Deploy from a branch**, dal `main`, klasör `/ (root)` seçin. Oyun `https://<kullanıcı>.github.io/lingo/` adresinde yayınlanır.
 2. **Kelime eklemek için:** GitHub'da `kelimeler.txt` dosyasını açın, kalem (✎) simgesine basın, yeni kelimeleri her satıra bir tane yazın ve **Commit changes** deyin. Büyük/küçük harf ve sıra önemli değil; 4–7 harf dışındakiler ve Türk alfabesi dışı harf içerenler oyunda yok sayılır. Oyun 1–2 dakika içinde güncellenir.
-3. **Bonus harf için:** `ayarlar.txt` içindeki `bonus harf: hayır` satırını `evet` yapın.
+3. **Ayarlar için:** `ayarlar.txt` içindeki `sözlük kontrolü` ve `bonus harf` satırlarını `evet` ya da `hayır` yapın.
 
 `admin.html` sayfası bu iki dosyaya giden "GitHub'da düzenle" düğmelerini ve mevcut kelime listesini gösterir. İsteyen için "Gelişmiş" bölümünde depoya yazabilen bir GitHub token'ı ile doğrudan panelden ekleme/silme de vardır (token: Settings → Developer settings → Personal access tokens → Fine-grained; Repository access: yalnızca bu depo; Permissions → Contents: Read and write).
 
@@ -101,7 +103,7 @@ Render, Railway veya Fly.io gibi bir serviste yayınlarken start komutu `node se
 
 Panel hangi ortamda olduğunu kendisi anlar: Node sunucusu varsa şifreyle çalışır; GitHub Pages'te ise dosyaları GitHub'da düzenlemeye yönlendirir (isteğe bağlı token ile doğrudan panelden de yazabilir).
 
-- **Oyun ayarları:** Herkes için geçerli kurallar. Şimdilik tek ayar var: *Bonus harf* (iki takım modunda sıra geçince rakibe harf açılır). Varsayılan kapalı.
+- **Oyun ayarları:** Herkes için geçerli kurallar. *Sözlük kontrolü* (varsayılan açık) ve *Bonus harf* (iki takım modunda sıra geçince rakibe harf açılır). Varsayılan kapalı.
 - **Kelime ekle:** Tek tek ya da toplu yapıştırarak; virgül, boşluk veya satır sonuyla ayrılmış. Kelimeler Türkçe küçük harfe çevrilir; 4–7 harf ve Türk alfabesi dışındakiler nedeniyle birlikte reddedilir, tekrarlar atlanır.
 - **Kelime havuzu:** Uzunluğa göre sekmeler, arama, tek tıkla silme, JSON indirme.
 
@@ -133,7 +135,8 @@ npm test
 ```
 index.html          Oyun sayfası
 admin.html          Kelime yönetim paneli (GitHub token'ı ya da Node sunucusu şifresiyle)
-kelimeler.txt       Kelime havuzu: her satıra bir kelime (GitHub'da doğrudan düzenlenir)
+kelimeler.txt       Cevap havuzu: her satıra bir kelime (GitHub'da doğrudan düzenlenir)
+sozluk/4-7.txt      Kabul edilen tahminler: 105.543 kelimelik Türkçe sözlük
 ayarlar.txt         Oyun ayarları: "bonus harf: evet/hayır"
 js/logic.js         Saf oyun mantığı + kelime deposu yardımcıları (DOM'suz; sunucu ve testler de kullanır)
 js/game.js          Oyun akışı, süre, sıra geçişi, kart/top çekme, arayüz
@@ -151,7 +154,9 @@ docs/arastirma.md   Lingo kuralları ve örnek uygulamalar araştırma notları
 
 ## Kelime havuzu
 
-Havuz yalnızca cevap kelimesi seçiminde kullanılır; tahminler sözlükle karşılaştırılmaz. Oyun havuzu şu sırayla arar: Node sunucusu (`api/words`) → depodaki `kelimeler.txt` → gömülü `js/words.js`.
+İki ayrı liste vardır: **cevap havuzu** (`kelimeler.txt`, 6.915 kelime) oyunun seçtiği gizli kelimelerdir; **sözlük** (`sozluk/4.txt` … `sozluk/7.txt`, 105.543 kelime) oyuncunun yazabileceği kelimelerdir. Ayrıntılar ve kaynaklar: [docs/sozluk.md](docs/sozluk.md).
+
+Oyun cevap havuzunu şu sırayla arar: Node sunucusu (`api/words`) → depodaki `kelimeler.txt` → gömülü `js/words.js`. Sözlük yalnızca oynanan uzunluk için arka planda yüklenir; dosya yoksa denetim kendiliğinden kapanır.
 
 Kelime eklemenin en kolay yolu `kelimeler.txt` dosyasını GitHub'da düzenlemektir. Dosyadaki `#` ile başlayan satırlar açıklamadır; kelimeler istenen yere yazılabilir, oyun uzunluğa göre kendisi gruplar.
 

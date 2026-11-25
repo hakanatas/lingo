@@ -70,20 +70,20 @@ test('POST /api/auth', async () => {
 });
 
 test('kelime ekle, kalıcı olsun, sil', async () => {
-  const add = await (await fetch(base + '/api/words', { method: 'POST', headers: admin, body: JSON.stringify({ text: 'ZÜMRÜT, kalem, abc' }) })).json();
-  assert.deepEqual(add.added, ['zümrüt']);
+  const add = await (await fetch(base + '/api/words', { method: 'POST', headers: admin, body: JSON.stringify({ text: 'ŞIPIDIK, kalem, abc' }) })).json();
+  assert.deepEqual(add.added, ['şıpıdık']);
   assert.deepEqual(add.skipped, ['kalem']);
   assert.equal(add.rejected[0].word, 'abc');
 
   const onDisk = JSON.parse(fs.readFileSync(path.join(process.env.DATA_DIR, 'words.json'), 'utf8'));
-  assert.ok(onDisk[6].includes('zümrüt'), 'diske yazıldı');
+  assert.ok(onDisk[7].includes('şıpıdık'), 'diske yazıldı');
 
-  const del = await fetch(base + '/api/words/' + encodeURIComponent('zümrüt'), { method: 'DELETE', headers: admin });
+  const del = await fetch(base + '/api/words/' + encodeURIComponent('şıpıdık'), { method: 'DELETE', headers: admin });
   assert.equal(del.status, 200);
-  const again = await fetch(base + '/api/words/' + encodeURIComponent('zümrüt'), { method: 'DELETE', headers: admin });
+  const again = await fetch(base + '/api/words/' + encodeURIComponent('şıpıdık'), { method: 'DELETE', headers: admin });
   assert.equal(again.status, 404);
-  const w = await (await fetch(base + '/api/words?len=6')).json();
-  assert.ok(!w.words.includes('zümrüt'));
+  const w = await (await fetch(base + '/api/words?len=7')).json();
+  assert.ok(!w.words.includes('şıpıdık'));
 });
 
 test('GET /api/daily aynı gün aynı kelime', async () => {

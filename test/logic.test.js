@@ -143,6 +143,46 @@ test('ayarlar.txt biçimi', () => {
   assert.deepEqual(L.parseSettingsText('bonus harf: evet'), { bonusLetter: true });
   assert.deepEqual(L.parseSettingsText('Bonus_Harf = Kapalı # not'), { bonusLetter: false });
   assert.deepEqual(L.parseSettingsText('bonus harf: belki\nbaşka: evet'), {});
-  assert.deepEqual(L.parseSettingsText(L.settingsToText({ bonusLetter: true })), { bonusLetter: true });
+  assert.deepEqual(L.parseSettingsText('sözlük kontrolü: hayır'), { dictionary: false });
+  assert.deepEqual(L.parseSettingsText('Sozluk Kontrolu = Evet'), { dictionary: true });
+  assert.deepEqual(L.parseSettingsText(L.settingsToText({ bonusLetter: true })), { dictionary: true, bonusLetter: true });
   assert.match(L.settingsToText({}), /bonus harf: hayır/);
+  assert.match(L.settingsToText({}), /sözlük kontrolü: evet/);
+});
+
+test('parseDictionaryText: yorumları ve geçersizleri atar, Türkçe küçük harfe çevirir', () => {
+  const d = L.parseDictionaryText('# başlık\nkalem\nZÜMRÜT\nIŞIK\nabc\nkalemlik\n\n  evler  \n');
+  assert.deepEqual([...d].sort(), ['evler', 'ışık', 'kalem', 'zümrüt'].sort());
+  assert.equal(d.has('kalem'), true);
+  assert.equal(d.has('abc'), false, 'kısa kelime alınmaz');
+  assert.equal(d.has('kalemlik'), false, 'uzun kelime alınmaz');
+});
+
+test('validateGuess sözlükle: Set ve dizi birlikte çalışır, hedef her zaman geçerli', () => {
+  const set = L.parseDictionaryText('kalem\nkemal');
+  assert.deepEqual(L.validateGuess('kemal', 'kitap', set), { ok: true });
+  assert.equal(L.validateGuess('kxxxx', 'kitap', set).reason, 'dictionary');
+  assert.deepEqual(L.validateGuess('kitap', 'kitap', set), { ok: true }, 'hedef sözlükte olmasa da kabul edilir');
+  assert.deepEqual(L.validateGuess('kemal', 'kitap', ['kemal']), { ok: true }, 'dizi de olur');
+  assert.deepEqual(L.validateGuess('kxxxx', 'kitap', set, { checkDictionary: false }), { ok: true }, 'denetim kapalı');
+  assert.deepEqual(L.validateGuess('kxxxx', 'kitap', null), { ok: true }, 'sözlük yoksa denetim yok');
+  assert.equal(L.validateGuess('melek', 'kitap', set).reason, 'firstLetter', 'ilk harf sözlükten önce gelir');
+});
+
+test('sozluk dosyaları: her uzunluk dolu ve kendi uzunluğunda', () => {
+  const fs = require('node:fs');
+  for (const n of [4, 5, 6, 7]) {
+    const d = L.parseDictionaryText(fs.readFileSync(`sozluk/${n}.txt`, 'utf8'));
+    assert.ok(d.size > 3000, `${n} harf sözlüğü yeterince büyük (${d.size})`);
+    for (const w of d) assert.equal(L.chars(w).length, n, `${w} ${n} harfli olmalı`);
+  }
+});
+
+test('cevap havuzundaki her kelime sözlükte var', () => {
+  const fs = require('node:fs');
+  for (const n of [4, 5, 6, 7]) {
+    const d = L.parseDictionaryText(fs.readFileSync(`sozluk/${n}.txt`, 'utf8'));
+    const eksik = WORDS[n].filter((w) => !d.has(w));
+    assert.deepEqual(eksik, [], `${n} harfli cevaplar sözlükte`);
+  }
 });

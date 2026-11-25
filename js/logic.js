@@ -91,11 +91,18 @@
     }
     if (options.checkDictionary !== false && dictionary) {
       var lower = toLowerTr(g);
-      if (dictionary.indexOf(lower) === -1 && lower !== toLowerTr(t)) {
+      if (lower !== toLowerTr(t) && !dictionaryHas(dictionary, lower)) {
         return { ok: false, reason: 'dictionary' };
       }
     }
     return { ok: true };
+  }
+
+  /** Sözlük hem dizi hem Set olabilir; ikisinde de üyelik sorar. */
+  function dictionaryHas(dictionary, word) {
+    if (!dictionary) return false;
+    if (typeof dictionary.has === 'function') return dictionary.has(word);
+    return dictionary.indexOf(word) !== -1;
   }
 
   /** Klavye tuşlarının durumunu birleştirir: correct > present > absent. */
@@ -349,7 +356,10 @@
 
   var TRUE_WORDS = ['evet', 'açık', 'acik', 'true', '1', 'on', 'aktif', 'var'];
   var FALSE_WORDS = ['hayır', 'hayir', 'kapalı', 'kapali', 'false', '0', 'off', 'pasif', 'yok'];
-  var SETTING_KEYS = { bonusharf: 'bonusLetter', bonusletter: 'bonusLetter' };
+  var SETTING_KEYS = {
+    bonusharf: 'bonusLetter', bonusletter: 'bonusLetter',
+    sözlükkontrolü: 'dictionary', sozlukkontrolu: 'dictionary', sözlük: 'dictionary', sozluk: 'dictionary', dictionary: 'dictionary'
+  };
 
   /** ayarlar.txt: "bonus harf: evet" gibi satırlar. Bilinmeyen anahtarlar yok sayılır. */
   function parseSettingsText(text) {
@@ -374,15 +384,30 @@
       '# Lingo oyun ayarları',
       '# Değeri "evet" ya da "hayır" yapıp kaydedin; # ile başlayan satırlar yok sayılır.',
       '',
+      '# Tahminler Türkçe sözlükte aransın mı? Kapatılırsa her harf dizisi kabul edilir.',
+      'sözlük kontrolü: ' + (s.dictionary ? 'evet' : 'hayır'),
+      '',
       '# İki takım modunda sıra rakibe geçince kelimeden rastgele bir harf açılsın mı? (TV kuralı)',
       'bonus harf: ' + (s.bonusLetter ? 'evet' : 'hayır'),
       ''
     ].join('\n');
   }
 
+  /** sozluk/<n>.txt: her satırda bir kelime. Geçerli olanları bir Set'e koyar. */
+  function parseDictionaryText(text) {
+    var set = new Set();
+    String(text || '').split(/\r?\n/).forEach(function (line) {
+      var w = normalizeWord(line.replace(/#.*$/, ''));
+      if (w && validateWord(w).ok) set.add(w);
+    });
+    return set;
+  }
+
   /* ---------- Oyun ayarları (sunucu / GitHub dosyası) ---------- */
 
   var DEFAULT_GAME_SETTINGS = {
+    // Tahminler sozluk/<uzunluk>.txt dosyasındaki Türkçe sözlükte aranır.
+    dictionary: true,
     // İki takım modunda sıra rakibe geçince kelimeden rastgele bir harf açılır (TV kuralı).
     bonusLetter: false
   };
@@ -431,7 +456,9 @@
     parseWordsText: parseWordsText,
     wordsToText: wordsToText,
     parseSettingsText: parseSettingsText,
-    settingsToText: settingsToText
+    settingsToText: settingsToText,
+    parseDictionaryText: parseDictionaryText,
+    dictionaryHas: dictionaryHas
   };
 
   if (typeof module !== 'undefined' && module.exports) {
