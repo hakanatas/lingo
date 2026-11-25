@@ -90,7 +90,7 @@
     },
     {
       title: 'Bir kelime yaz, renkleri oku',
-      text: 'Aynı harfle başlayan, aynı uzunlukta bir kelime yazıp ENTER\'a bas. Kırmızı kare: harf doğru yerde. Sarı daire: harf kelimede var ama başka yerde. Gri: kelimede yok.',
+      text: 'Aynı harfle başlayan, aynı uzunlukta gerçek bir Türkçe kelime yazıp ENTER\'a bas. Sözlükte olmayan kelime hak yakmaz, yeniden denersin. Kırmızı kare: harf doğru yerde. Sarı daire: harf kelimede var ama başka yerde. Gri: kelimede yok.',
       demo: function (box) {
         var board = el('div', 'board');
         var row = makeRow(['K', '', '', '', ''], ['locked', null, null, null, null]);
